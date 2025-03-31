@@ -82,17 +82,24 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientTicketNumber: "",
+      category: undefined,
       description: "",
       isRecurring: false,
       reportedBy: defaultReporter,
       reportedAt: new Date(),
+      location: undefined,
     },
   });
   
   const onSubmit = (data: FormData) => {
     const newIncident = addIncident({
-      ...data,
+      clientTicketNumber: data.clientTicketNumber,
+      category: data.category,
       reportedAt: data.reportedAt.toISOString(),
+      description: data.description,
+      isRecurring: data.isRecurring,
+      reportedBy: data.reportedBy,
+      location: data.location,
     });
     
     // Redirect to the incident details page
