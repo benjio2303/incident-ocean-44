@@ -1,4 +1,3 @@
-
 export type IncidentCategory = "System" | "Network" | "Radio" | "Radar" | "Other";
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
 export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "Nedeco";
@@ -39,9 +38,9 @@ export interface Incident {
 export interface IncidentFormData {
   clientTicketNumber: string;
   category: IncidentCategory;
+  reportedAt: string;
   description: string;
   isRecurring: boolean;
   reportedBy: string;
   location: IncidentLocation;
-  reportedAt: string;
 }
