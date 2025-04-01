@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LoginPage from "@/pages/LoginPage";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
 
 // User Pages
 import UserDashboard from "@/pages/user/UserDashboard";
@@ -43,12 +43,8 @@ const AppRoutes = () => {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       
       <Route element={<MainLayout />}>
-        {/* Redirect root to appropriate dashboard based on role */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Navigate to={role === "admin" ? "/admin/dashboard" : "/user/dashboard"} replace />
-          </ProtectedRoute>
-        } />
+        {/* Root path now uses the Index component */}
+        <Route path="/" element={<Index />} />
         
         {/* User Routes */}
         <Route path="/user/dashboard" element={

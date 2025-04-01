@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // This allows external access
     port: 8080,
+    strictPort: true, // Fail if port is already in use
   },
   plugins: [
     react(),
