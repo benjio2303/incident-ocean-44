@@ -1,13 +1,25 @@
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 export type UserRole = "user" | "admin" | null;
 
-interface AuthContextType {
+// Define our admin users
+const ADMIN_USERS = [
+  { username: "ofek", password: "Aa123456", role: "admin" as UserRole },
+  { username: "amit", password: "Aa123456", role: "admin" as UserRole },
+];
+
+interface User {
+  username: string;
   role: UserRole;
-  login: (username: string, password: string, selectedRole: UserRole) => void;
+}
+
+interface AuthContextType {
+  user: User | null;
+  role: UserRole;
+  login: (username: string, password: string, selectedRole?: UserRole) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -15,33 +27,52 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const login = (username: string, password: string, selectedRole: UserRole) => {
-    // In a real app, this would validate credentials against a backend
-    // For now, we'll simulate a successful login
-    if (username && password) {
-      setRole(selectedRole);
+  const login = (username: string, password: string, selectedRole?: UserRole) => {
+    // Check if it's one of our admin users
+    const adminUser = ADMIN_USERS.find(
+      (user) => user.username.toLowerCase() === username.toLowerCase() && user.password === password
+    );
+
+    if (adminUser) {
+      // This is an admin user
+      setUser({ username, role: adminUser.role });
+      setRole(adminUser.role);
       setIsAuthenticated(true);
       
       // Store in session storage for persistence
-      sessionStorage.setItem("role", selectedRole || "");
+      sessionStorage.setItem("username", username);
+      sessionStorage.setItem("role", adminUser.role || "");
       sessionStorage.setItem("isAuthenticated", "true");
       
       toast({
         title: "Login Successful",
-        description: `Welcome ${username}! You are logged in as ${selectedRole}.`,
+        description: `Welcome ${username}! You are logged in as ${adminUser.role}.`,
       });
       
-      // Redirect based on role
-      if (selectedRole === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/user/dashboard");
-      }
+      navigate("/admin/dashboard");
+    } else if (username && password) {
+      // For non-admin users
+      setUser({ username, role: selectedRole || "user" });
+      setRole(selectedRole || "user");
+      setIsAuthenticated(true);
+      
+      // Store in session storage for persistence
+      sessionStorage.setItem("username", username);
+      sessionStorage.setItem("role", selectedRole || "user");
+      sessionStorage.setItem("isAuthenticated", "true");
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome ${username}! You are logged in as ${selectedRole || "user"}.`,
+      });
+      
+      navigate("/user/dashboard");
     } else {
       toast({
         title: "Login Failed",
@@ -52,10 +83,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    setUser(null);
     setRole(null);
     setIsAuthenticated(false);
     
     // Clear session storage
+    sessionStorage.removeItem("username");
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("isAuthenticated");
     
@@ -68,18 +101,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Check for existing session on mount
-  React.useEffect(() => {
+  useEffect(() => {
+    const storedUsername = sessionStorage.getItem("username");
     const storedRole = sessionStorage.getItem("role") as UserRole;
     const storedAuth = sessionStorage.getItem("isAuthenticated");
     
-    if (storedAuth === "true" && storedRole) {
+    if (storedAuth === "true" && storedRole && storedUsername) {
+      setUser({ username: storedUsername, role: storedRole });
       setRole(storedRole);
       setIsAuthenticated(true);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ role, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, role, login, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
