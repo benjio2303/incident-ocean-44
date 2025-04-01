@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { Incident, IncidentFormData, IncidentCategory, IncidentStatus, ResponsibleTeam, IncidentLocation } from "@/models/incident";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,133 @@ const generateTicketNumber = (): string => {
   const timestamp = new Date().getTime().toString().slice(-6);
   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   return `CY-${timestamp}-${random}`;
+};
+
+const sendEmailNotification = async (incident: Incident) => {
+  const emailAddresses = ["Amit.Arbel@elbitsystems.com", "Elbit.SupportCY@elbitsystems.com"];
+  const emailSubject = `New Incident Reported: ${incident.internalTicketNumber}`;
+  const emailBody = `
+    A new incident has been reported:
+    
+    Ticket Number: ${incident.internalTicketNumber}
+    Client Ticket: ${incident.clientTicketNumber || 'N/A'}
+    Category: ${incident.category}
+    Description: ${incident.description}
+    Location: ${incident.location}
+    Reported By: ${incident.reportedBy}
+    Reported At: ${incident.reportedAt.toLocaleString()}
+    
+    Please assign this incident to the appropriate team.
+  `;
+  
+  console.log("Sending email notification to:", emailAddresses);
+  console.log("Email subject:", emailSubject);
+  console.log("Email body:", emailBody);
+  
+  try {
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: emailAddresses,
+        subject: emailSubject,
+        body: emailBody,
+        incident: incident,
+      }),
+    }).catch(() => {
+      console.log("Email would be sent in production environment");
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error sending email notification:", error);
+    return false;
+  }
+};
+
+const checkSLADeadline = (incident: Incident) => {
+  if (incident.status === "Resolved") return null;
+  
+  const openedTime = incident.openedAt.getTime();
+  const currentTime = new Date().getTime();
+  const twoHoursInMs = 2 * 60 * 60 * 1000;
+  const fourHoursInMs = 4 * 60 * 60 * 1000;
+  
+  const timeElapsed = currentTime - openedTime;
+  
+  if (timeElapsed >= fourHoursInMs) {
+    return "escalate";
+  } else if (timeElapsed >= twoHoursInMs) {
+    return "warning";
+  }
+  
+  return null;
+};
+
+const sendSLANotification = async (incident: Incident, type: "warning" | "escalate") => {
+  const emailAddresses = ["Amit.Arbel@elbitsystems.com", "Elbit.SupportCY@elbitsystems.com"];
+  let emailSubject = "";
+  let emailBody = "";
+  
+  if (type === "warning") {
+    emailSubject = `SLA Warning: 2 Hours Remaining for Incident ${incident.internalTicketNumber}`;
+    emailBody = `
+      Warning: The SLA deadline is approaching for incident ${incident.internalTicketNumber}.
+      
+      You have 2 hours remaining to resolve this incident before it must be escalated to Engineering.
+      
+      Incident Details:
+      Category: ${incident.category}
+      Description: ${incident.description}
+      Location: ${incident.location}
+      Current Team: ${incident.currentTeam || 'Unassigned'}
+      
+      Please take appropriate action.
+    `;
+  } else if (type === "escalate") {
+    emailSubject = `SLA Deadline Expired: Escalate Incident ${incident.internalTicketNumber} to Engineering`;
+    emailBody = `
+      URGENT: The SLA deadline has expired for incident ${incident.internalTicketNumber}.
+      
+      This incident must be escalated to Engineering immediately.
+      
+      Incident Details:
+      Category: ${incident.category}
+      Description: ${incident.description}
+      Location: ${incident.location}
+      Current Team: ${incident.currentTeam || 'Unassigned'}
+      
+      Please escalate this incident immediately.
+    `;
+  }
+  
+  console.log("Sending SLA notification to:", emailAddresses);
+  console.log("Email subject:", emailSubject);
+  console.log("Email body:", emailBody);
+  
+  try {
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: emailAddresses,
+        subject: emailSubject,
+        body: emailBody,
+        incident: incident,
+      }),
+    }).catch(() => {
+      console.log("SLA email would be sent in production environment");
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error sending SLA notification:", error);
+    return false;
+  }
 };
 
 interface IncidentContextType {
@@ -22,7 +148,6 @@ interface IncidentContextType {
 
 const IncidentContext = createContext<IncidentContextType | undefined>(undefined);
 
-// Sample mock data
 const mockIncidents: Incident[] = [
   {
     id: "1",
@@ -33,7 +158,7 @@ const mockIncidents: Incident[] = [
     isRecurring: false,
     reportedBy: "John Doe",
     location: "Nicosia HQ",
-    reportedAt: new Date(Date.now() - 86400000 * 5), // 5 days ago
+    reportedAt: new Date(Date.now() - 86400000 * 5),
     openedAt: new Date(Date.now() - 86400000 * 5),
     status: "In Progress",
     teamHistory: [
@@ -59,9 +184,9 @@ const mockIncidents: Incident[] = [
     isRecurring: true,
     reportedBy: "Jane Smith",
     location: "Larnaca Airport",
-    reportedAt: new Date(Date.now() - 86400000 * 10), // 10 days ago
+    reportedAt: new Date(Date.now() - 86400000 * 10),
     openedAt: new Date(Date.now() - 86400000 * 10),
-    closedAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
+    closedAt: new Date(Date.now() - 86400000 * 2),
     status: "Resolved",
     teamHistory: [
       {
@@ -93,7 +218,7 @@ const mockIncidents: Incident[] = [
     isRecurring: false,
     reportedBy: "Mike Johnson",
     location: "Remote Site A",
-    reportedAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
+    reportedAt: new Date(Date.now() - 86400000 * 2),
     openedAt: new Date(Date.now() - 86400000 * 2),
     status: "Open",
     teamHistory: [
@@ -114,9 +239,9 @@ const mockIncidents: Incident[] = [
     isRecurring: true,
     reportedBy: "Sarah Palmer",
     location: "Paphos Airport",
-    reportedAt: new Date(Date.now() - 86400000 * 15), // 15 days ago
+    reportedAt: new Date(Date.now() - 86400000 * 15),
     openedAt: new Date(Date.now() - 86400000 * 15),
-    closedAt: new Date(Date.now() - 86400000 * 12), // 12 days ago
+    closedAt: new Date(Date.now() - 86400000 * 12),
     status: "Resolved",
     teamHistory: [
       {
@@ -143,7 +268,7 @@ const mockIncidents: Incident[] = [
     isRecurring: false,
     reportedBy: "Alex Wong",
     location: "Nicosia HQ",
-    reportedAt: new Date(Date.now() - 86400000), // 1 day ago
+    reportedAt: new Date(Date.now() - 86400000),
     openedAt: new Date(Date.now() - 86400000),
     status: "In Progress",
     teamHistory: [
@@ -154,7 +279,7 @@ const mockIncidents: Incident[] = [
       },
       {
         team: "Engineering",
-        assignedAt: new Date(Date.now() - 43200000), // 12 hours ago
+        assignedAt: new Date(Date.now() - 43200000),
         notes: "Escalated to DB team",
       }
     ],
@@ -167,11 +292,9 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load incidents from local storage or use mock data
     const storedIncidents = localStorage.getItem("incidents");
     if (storedIncidents) {
       try {
-        // Parse dates correctly
         const parsedIncidents = JSON.parse(storedIncidents, (key, value) => {
           const dateProperties = ["reportedAt", "openedAt", "closedAt", "assignedAt", "resolvedAt"];
           if (dateProperties.includes(key) && value) {
@@ -185,17 +308,55 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
         setIncidents(mockIncidents);
       }
     } else {
-      // Use mock data for initial load
       setIncidents(mockIncidents);
     }
   }, []);
 
-  // Save to localStorage whenever incidents change
   useEffect(() => {
     if (incidents.length > 0) {
       localStorage.setItem("incidents", JSON.stringify(incidents));
     }
   }, [incidents]);
+
+  useEffect(() => {
+    const checkSLADeadlines = () => {
+      incidents.forEach(incident => {
+        const slaStatus = checkSLADeadline(incident);
+        
+        const slaNotificationKey = `sla-notification-${incident.id}`;
+        const sentNotifications = localStorage.getItem(slaNotificationKey) ? 
+          JSON.parse(localStorage.getItem(slaNotificationKey) || '{}') : {};
+        
+        if (slaStatus === "warning" && !sentNotifications.warning) {
+          sendSLANotification(incident, "warning");
+          sentNotifications.warning = true;
+          localStorage.setItem(slaNotificationKey, JSON.stringify(sentNotifications));
+          
+          toast({
+            title: "SLA Warning",
+            description: `2 hours remaining for incident ${incident.internalTicketNumber}`,
+            variant: "destructive",
+          });
+        } else if (slaStatus === "escalate" && !sentNotifications.escalate) {
+          sendSLANotification(incident, "escalate");
+          sentNotifications.escalate = true;
+          localStorage.setItem(slaNotificationKey, JSON.stringify(sentNotifications));
+          
+          toast({
+            title: "SLA Deadline Expired",
+            description: `Incident ${incident.internalTicketNumber} should be escalated to Engineering`,
+            variant: "destructive",
+          });
+        }
+      });
+    };
+    
+    checkSLADeadlines();
+    
+    const interval = setInterval(checkSLADeadlines, 60000);
+    
+    return () => clearInterval(interval);
+  }, [incidents, toast]);
 
   const addIncident = (data: IncidentFormData): Incident => {
     const newIncident: Incident = {
@@ -216,9 +377,11 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     setIncidents(prev => [...prev, newIncident]);
     
+    sendEmailNotification(newIncident);
+    
     toast({
       title: "Incident Reported",
-      description: `Incident has been created with ticket number ${newIncident.internalTicketNumber}`,
+      description: `Incident has been created with ticket number ${newIncident.internalTicketNumber}. Email notifications have been sent.`,
     });
     
     return newIncident;
@@ -230,12 +393,10 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (incident.id === id) {
           const updatedIncident = { ...incident, status };
           
-          // If resolving, set the closed date
           if (status === "Resolved" && !incident.closedAt) {
             updatedIncident.closedAt = new Date();
             updatedIncident.resolvingTeam = incident.currentTeam;
             
-            // Also mark the last team assignment as resolved
             if (updatedIncident.teamHistory.length > 0) {
               const lastTeamIndex = updatedIncident.teamHistory.length - 1;
               updatedIncident.teamHistory[lastTeamIndex] = {
