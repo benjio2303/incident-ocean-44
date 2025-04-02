@@ -8,6 +8,7 @@ import TeamPerformance from "@/components/dashboard/TeamPerformance";
 import LocationMap from "@/components/dashboard/LocationMap";
 import PowerBIEmbed from "@/components/powerbi/PowerBIEmbed";
 import ExportIncidents from "@/components/admin/ExportIncidents";
+import SLAStatistics from "@/components/dashboard/SLAStatistics";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -34,6 +35,11 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CategoryChart incidents={incidents} />
         <TeamPerformance incidents={incidents} />
+      </div>
+      
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">SLA Performance</h2>
+        <SLAStatistics incidents={incidents} />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

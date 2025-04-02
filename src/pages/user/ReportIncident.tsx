@@ -1,8 +1,11 @@
 
 import React from "react";
 import IncidentForm from "@/components/incidents/IncidentForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ReportIncident: React.FC = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -12,7 +15,7 @@ const ReportIncident: React.FC = () => {
         </p>
       </div>
       
-      <IncidentForm defaultReporter="John Doe" />
+      <IncidentForm defaultReporter={user?.name || "Nedeco"} />
     </div>
   );
 };

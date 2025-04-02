@@ -31,7 +31,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Clock } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -44,6 +44,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { IncidentCategory, IncidentLocation } from "@/models/incident";
 
+// Enhanced formSchema with conditional fields
 const formSchema = z.object({
   clientTicketNumber: z.string().min(1, {
     message: "Client ticket number is required",
@@ -66,6 +67,12 @@ const formSchema = z.object({
   location: z.enum(["Nicosia HQ", "Larnaca Airport", "Paphos Airport", "Limassol Port", "Remote Site A", "Remote Site B", "Other"], {
     required_error: "Please select a location",
   }),
+  // Additional fields based on category
+  radioId: z.string().optional(),
+  serverType: z.string().optional(),
+  radarNumber: z.string().optional(),
+  networkSystemType: z.string().optional(),
+  incidentTime: z.string().default("12:00"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -77,6 +84,7 @@ interface IncidentFormProps {
 const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => {
   const { addIncident } = useIncidents();
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<IncidentCategory | null>(null);
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -88,15 +96,47 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
       reportedBy: defaultReporter,
       reportedAt: new Date(),
       location: undefined,
+      incidentTime: "12:00",
     },
   });
   
+  const watchCategory = form.watch("category");
+  
+  // Update selectedCategory when the category changes
+  React.useEffect(() => {
+    if (watchCategory) {
+      setSelectedCategory(watchCategory as IncidentCategory);
+    }
+  }, [watchCategory]);
+  
   const onSubmit = (data: FormData) => {
+    // Combine date and time
+    const reportDate = new Date(data.reportedAt);
+    const [hours, minutes] = data.incidentTime.split(":").map(Number);
+    reportDate.setHours(hours, minutes);
+    
+    // Prepare additional details based on category
+    let additionalDetails = "";
+    if (data.category === "Radio" && data.radioId) {
+      additionalDetails = `Radio ID: ${data.radioId}`;
+    } else if (data.category === "System" && data.serverType) {
+      additionalDetails = `Server Type: ${data.serverType}`;
+    } else if (data.category === "Radar" && data.radarNumber) {
+      additionalDetails = `Radar Number: ${data.radarNumber}`;
+    } else if (data.category === "Network" && data.networkSystemType) {
+      additionalDetails = `Network System Type: ${data.networkSystemType}`;
+    }
+    
+    // Add the additional details to the description if they exist
+    const enhancedDescription = additionalDetails 
+      ? `${data.description}\n\n${additionalDetails}`
+      : data.description;
+    
     const newIncident = addIncident({
       clientTicketNumber: data.clientTicketNumber,
       category: data.category,
-      reportedAt: data.reportedAt.toISOString(),
-      description: data.description,
+      reportedAt: reportDate.toISOString(),
+      description: enhancedDescription,
       isRecurring: data.isRecurring,
       reportedBy: data.reportedBy,
       location: data.location,
@@ -104,6 +144,80 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
     
     // Redirect to the incident details page
     navigate(`/user/incidents/${newIncident.id}`);
+  };
+  
+  // Render conditional fields based on the selected category
+  const renderCategorySpecificFields = () => {
+    if (!selectedCategory) return null;
+    
+    switch (selectedCategory) {
+      case "Radio":
+        return (
+          <FormField
+            control={form.control}
+            name="radioId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Radio ID</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter the Radio ID" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      case "System":
+        return (
+          <FormField
+            control={form.control}
+            name="serverType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Server Type</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter the server type" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      case "Radar":
+        return (
+          <FormField
+            control={form.control}
+            name="radarNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Radar Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter the radar number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      case "Network":
+        return (
+          <FormField
+            control={form.control}
+            name="networkSystemType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Network System Type</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter the network system type" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      default:
+        return null;
+    }
   };
   
   return (
@@ -157,12 +271,15 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
                 )}
               />
               
+              {/* Category specific fields */}
+              {renderCategorySpecificFields()}
+              
               <FormField
                 control={form.control}
                 name="reportedAt"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date & Time of Incident</FormLabel>
+                    <FormLabel>Date of Incident</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -191,6 +308,27 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="incidentTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time of Incident</FormLabel>
+                    <div className="flex items-center">
+                      <FormControl>
+                        <Input
+                          type="time"
+                          {...field}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <Clock className="ml-2 h-4 w-4 text-muted-foreground" />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -1,3 +1,4 @@
+
 export type IncidentCategory = "System" | "Network" | "Radio" | "Radar" | "Other";
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
 export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "Nedeco";
@@ -33,6 +34,11 @@ export interface Incident {
   teamHistory: TeamAssignment[];
   currentTeam?: ResponsibleTeam;
   resolvingTeam?: ResponsibleTeam;
+  // Additional fields for specific categories (stored in description)
+  radioId?: string;
+  serverType?: string;
+  radarNumber?: string;
+  networkSystemType?: string;
 }
 
 export interface IncidentFormData {
@@ -43,4 +49,9 @@ export interface IncidentFormData {
   isRecurring: boolean;
   reportedBy: string;
   location: IncidentLocation;
+  // These are optional as they depend on the category
+  radioId?: string;
+  serverType?: string;
+  radarNumber?: string;
+  networkSystemType?: string;
 }

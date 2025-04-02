@@ -56,7 +56,7 @@ const sendEmailNotification = async (incident: Incident) => {
 const checkSLADeadline = (incident: Incident) => {
   if (incident.status === "Resolved") return null;
   
-  const openedTime = incident.openedAt.getTime();
+  const openedTime = new Date(incident.openedAt).getTime();
   const currentTime = new Date().getTime();
   const twoHoursInMs = 2 * 60 * 60 * 1000;
   const fourHoursInMs = 4 * 60 * 60 * 1000;
@@ -321,6 +321,8 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     const checkSLADeadlines = () => {
       incidents.forEach(incident => {
+        if (incident.status === "Resolved") return;
+        
         const slaStatus = checkSLADeadline(incident);
         
         const slaNotificationKey = `sla-notification-${incident.id}`;
@@ -334,7 +336,7 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
           
           toast({
             title: "SLA Warning",
-            description: `2 hours remaining for incident ${incident.internalTicketNumber}`,
+            description: `2 hours remaining for incident ${incident.internalTicketNumber}. Technicians need to resolve or escalate.`,
             variant: "destructive",
           });
         } else if (slaStatus === "escalate" && !sentNotifications.escalate) {
@@ -342,11 +344,21 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
           sentNotifications.escalate = true;
           localStorage.setItem(slaNotificationKey, JSON.stringify(sentNotifications));
           
-          toast({
-            title: "SLA Deadline Expired",
-            description: `Incident ${incident.internalTicketNumber} should be escalated to Engineering`,
-            variant: "destructive",
-          });
+          if (incident.currentTeam === "Technicians") {
+            assignTeam(incident.id, "Engineering", "Auto-escalated due to SLA expiration");
+            
+            toast({
+              title: "SLA Deadline Expired - Auto-escalated",
+              description: `Incident ${incident.internalTicketNumber} has been escalated to Engineering after 4 hours`,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "SLA Deadline Expired",
+              description: `Incident ${incident.internalTicketNumber} has exceeded the 4-hour SLA limit`,
+              variant: "destructive",
+            });
+          }
         }
       });
     };
