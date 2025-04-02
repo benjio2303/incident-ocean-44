@@ -28,8 +28,11 @@ const CloseIncidentButton: React.FC<CloseIncidentButtonProps> = ({ incident, onC
     }
   };
   
-  // Only show for open/in progress incidents and for Nedeco users
-  if (incident.status === "Resolved" || user?.role !== "user" || user?.name !== "Nedeco") {
+  // Modified condition to check for Nedeco reporter
+  // Only show for open/in progress incidents and for reporter "Nedeco"
+  const isNedeco = user?.email?.includes("nedeco") || user?.email?.toLowerCase() === "nedeco@elbit.com";
+  
+  if (incident.status === "Resolved" || !isNedeco) {
     return null;
   }
   

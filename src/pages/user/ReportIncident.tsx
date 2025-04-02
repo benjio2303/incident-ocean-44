@@ -6,6 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 const ReportIncident: React.FC = () => {
   const { user } = useAuth();
   
+  // Fixed user.name property access by providing a fallback
+  const reporterName = user?.email?.split('@')[0] || "Nedeco";
+  
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -15,7 +18,7 @@ const ReportIncident: React.FC = () => {
         </p>
       </div>
       
-      <IncidentForm defaultReporter={user?.name || "Nedeco"} />
+      <IncidentForm defaultReporter={reporterName} />
     </div>
   );
 };

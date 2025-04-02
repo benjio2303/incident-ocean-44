@@ -2,14 +2,8 @@
 export type IncidentCategory = "System" | "Network" | "Radio" | "Radar" | "Other";
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
 export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "Nedeco";
-export type IncidentLocation = 
-  | "Nicosia HQ" 
-  | "Larnaca Airport" 
-  | "Paphos Airport" 
-  | "Limassol Port" 
-  | "Remote Site A" 
-  | "Remote Site B"
-  | "Other";
+// Changed from enum to string to allow free text
+export type IncidentLocation = string;
 
 export interface TeamAssignment {
   team: ResponsibleTeam;

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,9 +41,8 @@ import { format } from "date-fns";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { IncidentCategory, IncidentLocation } from "@/models/incident";
+import { IncidentCategory } from "@/models/incident";
 
-// Enhanced formSchema with conditional fields
 const formSchema = z.object({
   clientTicketNumber: z.string().min(1, {
     message: "Client ticket number is required",
@@ -64,10 +62,9 @@ const formSchema = z.object({
   reportedBy: z.string().min(1, {
     message: "Reporter name is required",
   }),
-  location: z.enum(["Nicosia HQ", "Larnaca Airport", "Paphos Airport", "Limassol Port", "Remote Site A", "Remote Site B", "Other"], {
-    required_error: "Please select a location",
+  location: z.string().min(1, {
+    message: "Location is required",
   }),
-  // Additional fields based on category
   radioId: z.string().optional(),
   serverType: z.string().optional(),
   radarNumber: z.string().optional(),
@@ -95,14 +92,13 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
       isRecurring: false,
       reportedBy: defaultReporter,
       reportedAt: new Date(),
-      location: undefined,
+      location: "",
       incidentTime: "12:00",
     },
   });
   
   const watchCategory = form.watch("category");
   
-  // Update selectedCategory when the category changes
   React.useEffect(() => {
     if (watchCategory) {
       setSelectedCategory(watchCategory as IncidentCategory);
@@ -110,12 +106,10 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
   }, [watchCategory]);
   
   const onSubmit = (data: FormData) => {
-    // Combine date and time
     const reportDate = new Date(data.reportedAt);
     const [hours, minutes] = data.incidentTime.split(":").map(Number);
     reportDate.setHours(hours, minutes);
     
-    // Prepare additional details based on category
     let additionalDetails = "";
     if (data.category === "Radio" && data.radioId) {
       additionalDetails = `Radio ID: ${data.radioId}`;
@@ -127,7 +121,6 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
       additionalDetails = `Network System Type: ${data.networkSystemType}`;
     }
     
-    // Add the additional details to the description if they exist
     const enhancedDescription = additionalDetails 
       ? `${data.description}\n\n${additionalDetails}`
       : data.description;
@@ -142,11 +135,9 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
       location: data.location,
     });
     
-    // Redirect to the incident details page
     navigate(`/user/incidents/${newIncident.id}`);
   };
   
-  // Render conditional fields based on the selected category
   const renderCategorySpecificFields = () => {
     if (!selectedCategory) return null;
     
@@ -271,7 +262,6 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
                 )}
               />
               
-              {/* Category specific fields */}
               {renderCategorySpecificFields()}
               
               <FormField
@@ -340,22 +330,9 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a location" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Nicosia HQ">Nicosia HQ</SelectItem>
-                        <SelectItem value="Larnaca Airport">Larnaca Airport</SelectItem>
-                        <SelectItem value="Paphos Airport">Paphos Airport</SelectItem>
-                        <SelectItem value="Limassol Port">Limassol Port</SelectItem>
-                        <SelectItem value="Remote Site A">Remote Site A</SelectItem>
-                        <SelectItem value="Remote Site B">Remote Site B</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="Enter incident location" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
