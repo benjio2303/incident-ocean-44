@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { 
   Card, 
   CardContent, 
@@ -8,7 +8,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Incident, IncidentStatus, ResponsibleTeam } from "@/models/incident";
+import { Incident, IncidentStatus, ResponsibleTeam, FileAttachment } from "@/models/incident";
 import { format } from "date-fns";
 import { 
   Calendar, 
@@ -18,7 +18,11 @@ import {
   CheckCircle2, 
   RefreshCw, 
   AlertCircle, 
-  ClipboardCheck
+  ClipboardCheck,
+  Paperclip,
+  FileImage,
+  File,
+  X
 } from "lucide-react";
 import { 
   Select, 
@@ -33,6 +37,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 
 interface IncidentDetailsProps {
   incident: Incident;
@@ -45,16 +60,29 @@ const statusColors: Record<IncidentStatus, string> = {
 };
 
 const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { updateIncidentStatus, assignTeam, resolveIncident } = useIncidents();
   const { toast } = useToast();
-  const [selectedTeam, setSelectedTeam] = React.useState<ResponsibleTeam | "">("");
-  const [teamNotes, setTeamNotes] = React.useState("");
+  const [selectedTeam, setSelectedTeam] = useState<ResponsibleTeam | "">("");
+  const [teamNotes, setTeamNotes] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const isAdmin = role === "admin";
   
   const handleStatusChange = (status: string) => {
     updateIncidentStatus(incident.id, status as IncidentStatus);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleAssignTeam = () => {
@@ -67,9 +95,26 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
       return;
     }
     
-    assignTeam(incident.id, selectedTeam, teamNotes);
+    const fileAttachments: FileAttachment[] = selectedFiles.map(file => ({
+      id: uuidv4(),
+      name: file.name,
+      type: file.type,
+      url: URL.createObjectURL(file),
+      uploadedAt: new Date(),
+      uploadedBy: user?.name || user?.displayName || "Admin"
+    }));
+    
+    assignTeam(incident.id, selectedTeam, teamNotes, fileAttachments);
     setSelectedTeam("");
     setTeamNotes("");
+    setSelectedFiles([]);
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <FileImage className="h-5 w-5 text-blue-500" />;
+    }
+    return <File className="h-5 w-5 text-gray-500" />;
   };
   
   return (
@@ -239,6 +284,57 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
                         onChange={e => setTeamNotes(e.target.value)}
                       />
                       
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Paperclip className="h-4 w-4" />
+                          <span className="text-sm font-medium">Attachments</span>
+                        </div>
+                        
+                        <div>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            multiple
+                          />
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full border-dashed border-2 py-6"
+                          >
+                            <Paperclip className="mr-2 h-4 w-4" />
+                            Click to add files or images
+                          </Button>
+                        </div>
+                        
+                        {selectedFiles.length > 0 && (
+                          <div className="space-y-2 mt-2">
+                            <div className="text-sm font-medium">Selected files:</div>
+                            <div className="border rounded divide-y">
+                              {selectedFiles.map((file, index) => (
+                                <div key={index} className="py-2 px-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {getFileIcon(file.type)}
+                                    <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeFile(index)}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
                       <Button onClick={handleAssignTeam}>
                         Assign Team
                       </Button>
@@ -269,7 +365,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
               ) : (
                 <div className="relative">
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
-                  <div className="space-y-4 relative">
+                  <div className="space-y-6 relative">
                     {incident.teamHistory.map((assignment, index) => (
                       <div key={index} className="relative pl-9">
                         <div className="absolute left-0 top-2 w-8 h-8 rounded-full bg-white border-2 border-cy-blue flex items-center justify-center text-sm text-cy-blue">
@@ -291,6 +387,79 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
                         {assignment.notes && (
                           <div className="mt-2 text-sm bg-gray-50 p-2 rounded-md border border-gray-100">
                             {assignment.notes}
+                          </div>
+                        )}
+                        
+                        {assignment.attachments && assignment.attachments.length > 0 && (
+                          <div className="mt-2">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Paperclip className="h-3 w-3 text-gray-500" />
+                              <span className="text-sm text-gray-500">
+                                {assignment.attachments.length} {assignment.attachments.length === 1 ? 'attachment' : 'attachments'}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {assignment.attachments.map((file, fileIndex) => (
+                                <Dialog key={fileIndex}>
+                                  <DialogTrigger asChild>
+                                    <button className="border rounded p-1 hover:bg-gray-50">
+                                      {file.type.startsWith('image/') ? (
+                                        <div className="w-12 h-12 relative">
+                                          <img 
+                                            src={file.url} 
+                                            alt={file.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="w-12 h-12 flex items-center justify-center bg-gray-100">
+                                          <File className="h-6 w-6 text-gray-500" />
+                                        </div>
+                                      )}
+                                    </button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-[90vw] sm:max-w-[600px] max-h-[90vh] overflow-auto">
+                                    <DialogHeader>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        {getFileIcon(file.type)}
+                                        <span className="truncate">{file.name}</span>
+                                      </DialogTitle>
+                                      <DialogDescription>
+                                        Uploaded {format(new Date(file.uploadedAt), "PPP p")} by {file.uploadedBy}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    {file.type.startsWith('image/') ? (
+                                      <div className="flex justify-center my-4">
+                                        <img
+                                          src={file.url}
+                                          alt={file.name}
+                                          className="max-w-full max-h-[70vh] object-contain"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-col items-center justify-center py-10">
+                                        <File className="h-16 w-16 text-gray-400 mb-4" />
+                                        <p className="text-center text-gray-600">
+                                          Preview not available for this file type
+                                        </p>
+                                      </div>
+                                    )}
+                                    <DialogFooter>
+                                      <a
+                                        href={file.url}
+                                        download={file.name}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Button>
+                                          Download File
+                                        </Button>
+                                      </a>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>

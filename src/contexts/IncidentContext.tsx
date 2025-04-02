@@ -140,10 +140,11 @@ interface IncidentContextType {
   incidents: Incident[];
   addIncident: (data: IncidentFormData) => Incident;
   updateIncidentStatus: (id: string, status: IncidentStatus) => void;
-  assignTeam: (id: string, team: ResponsibleTeam, notes?: string) => void;
+  assignTeam: (id: string, team: ResponsibleTeam, notes?: string, attachments?: FileAttachment[]) => void;
   resolveIncident: (id: string) => void;
   getIncidentById: (id: string) => Incident | undefined;
   getUserIncidents: (username: string) => Incident[];
+  addAttachmentToAssignment: (incidentId: string, teamAssignmentIndex: number, attachment: FileAttachment) => void;
 }
 
 const IncidentContext = createContext<IncidentContextType | undefined>(undefined);
@@ -430,14 +431,15 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
     });
   };
 
-  const assignTeam = (id: string, team: ResponsibleTeam, notes?: string) => {
+  const assignTeam = (id: string, team: ResponsibleTeam, notes?: string, attachments: FileAttachment[] = []) => {
     setIncidents(prev => 
       prev.map(incident => {
         if (incident.id === id) {
           const newTeamAssignment = {
             team,
             assignedAt: new Date(),
-            notes: notes || `Assigned to ${team}`
+            notes: notes || `Assigned to ${team}`,
+            attachments: attachments
           };
           
           return {
@@ -469,6 +471,33 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
     return incidents.filter(incident => incident.reportedBy === username);
   };
 
+  const addAttachmentToAssignment = (incidentId: string, teamAssignmentIndex: number, attachment: FileAttachment) => {
+    setIncidents(prev => 
+      prev.map(incident => {
+        if (incident.id === incidentId && incident.teamHistory.length > teamAssignmentIndex) {
+          const updatedTeamHistory = [...incident.teamHistory];
+          
+          if (!updatedTeamHistory[teamAssignmentIndex].attachments) {
+            updatedTeamHistory[teamAssignmentIndex].attachments = [];
+          }
+          
+          updatedTeamHistory[teamAssignmentIndex].attachments?.push(attachment);
+          
+          return {
+            ...incident,
+            teamHistory: updatedTeamHistory
+          };
+        }
+        return incident;
+      })
+    );
+    
+    toast({
+      title: "Attachment Added",
+      description: `File "${attachment.name}" has been attached to the assignment`,
+    });
+  };
+
   return (
     <IncidentContext.Provider value={{ 
       incidents, 
@@ -477,7 +506,8 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
       assignTeam, 
       resolveIncident,
       getIncidentById,
-      getUserIncidents
+      getUserIncidents,
+      addAttachmentToAssignment
     }}>
       {children}
     </IncidentContext.Provider>

@@ -5,11 +5,21 @@ export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "N
 // Changed from enum to string to allow free text
 export type IncidentLocation = string;
 
+export interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  uploadedAt: Date;
+  uploadedBy: string;
+}
+
 export interface TeamAssignment {
   team: ResponsibleTeam;
   assignedAt: Date;
   resolvedAt?: Date;
   notes?: string;
+  attachments?: FileAttachment[];
 }
 
 export interface Incident {
