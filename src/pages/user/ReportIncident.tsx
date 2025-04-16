@@ -6,8 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 const ReportIncident: React.FC = () => {
   const { user } = useAuth();
   
-  // Fixed user property access by providing a fallback
-  const reporterName = user?.name || user?.displayName || "Nedeco";
+  // Fixed user property access with type safety
+  const reporterName = user?.displayName || user?.email?.split('@')[0] || "Nedeco";
   
   return (
     <div className="space-y-6">
