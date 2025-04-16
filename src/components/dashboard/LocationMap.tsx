@@ -16,8 +16,8 @@ interface LocationData {
 }
 
 const LocationMap: React.FC<LocationMapProps> = ({ incidents }) => {
-  // Count incidents by location
-  const locationStats: Record<IncidentLocation, LocationData> = {
+  // Initialize with default locations as a safety measure
+  const defaultLocations: Record<string, LocationData> = {
     "Nicosia HQ": { name: "Nicosia HQ", count: 0, resolved: 0, open: 0 },
     "Larnaca Airport": { name: "Larnaca Airport", count: 0, resolved: 0, open: 0 },
     "Paphos Airport": { name: "Paphos Airport", count: 0, resolved: 0, open: 0 },
@@ -27,7 +27,38 @@ const LocationMap: React.FC<LocationMapProps> = ({ incidents }) => {
     "Other": { name: "Other", count: 0, resolved: 0, open: 0 }
   };
   
+  // Initialize location stats with the default locations
+  const locationStats: Record<string, LocationData> = { ...defaultLocations };
+  
+  // Count incidents by location with added safety checks
   incidents.forEach(incident => {
+    // Safety check: If the location doesn't exist in locationStats, create it
+    if (!incident.location) {
+      // Handle incidents with undefined location
+      if (!locationStats["Unknown"]) {
+        locationStats["Unknown"] = { name: "Unknown", count: 0, resolved: 0, open: 0 };
+      }
+      
+      locationStats["Unknown"].count++;
+      if (incident.status === "Resolved") {
+        locationStats["Unknown"].resolved++;
+      } else {
+        locationStats["Unknown"].open++;
+      }
+      return;
+    }
+    
+    // If this is a new location we haven't seen before, create an entry for it
+    if (!locationStats[incident.location]) {
+      locationStats[incident.location] = {
+        name: incident.location,
+        count: 0,
+        resolved: 0,
+        open: 0
+      };
+    }
+    
+    // Now safely increment the counters
     locationStats[incident.location].count++;
     
     if (incident.status === "Resolved") {

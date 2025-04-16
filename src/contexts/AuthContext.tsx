@@ -14,6 +14,9 @@ const ADMIN_USERS = [
 interface User {
   username: string;
   role: UserRole;
+  // Add these fields that are being used elsewhere
+  email?: string;
+  displayName?: string;
 }
 
 interface AuthContextType {
@@ -41,7 +44,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (adminUser) {
       // This is an admin user
-      setUser({ username, role: adminUser.role });
+      setUser({ 
+        username, 
+        role: adminUser.role,
+        displayName: username,
+        email: `${username}@example.com`
+      });
       setRole(adminUser.role);
       setIsAuthenticated(true);
       
@@ -58,7 +66,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       navigate("/admin/dashboard");
     } else if (username && password) {
       // For non-admin users
-      setUser({ username, role: selectedRole || "user" });
+      setUser({ 
+        username, 
+        role: selectedRole || "user",
+        displayName: username,
+        email: `${username}@example.com`
+      });
       setRole(selectedRole || "user");
       setIsAuthenticated(true);
       
@@ -107,7 +120,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedAuth = sessionStorage.getItem("isAuthenticated");
     
     if (storedAuth === "true" && storedRole && storedUsername) {
-      setUser({ username: storedUsername, role: storedRole });
+      setUser({ 
+        username: storedUsername, 
+        role: storedRole,
+        displayName: storedUsername,
+        email: `${storedUsername}@example.com` 
+      });
       setRole(storedRole);
       setIsAuthenticated(true);
     }
