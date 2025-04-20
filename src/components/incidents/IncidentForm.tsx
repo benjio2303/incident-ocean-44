@@ -1,410 +1,275 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { CalendarIcon, Clock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { useIncidents } from "@/contexts/IncidentContext";
-import { useNavigate } from "react-router-dom";
+
 import { cn } from "@/lib/utils";
-import { IncidentCategory } from "@/models/incident";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { IncidentCategory, IncidentLocation } from "@/models/incident";
+import { useIncidents } from "@/contexts/IncidentContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
-  clientTicketNumber: z.string().min(1, {
-    message: "Client ticket number is required",
-  }),
-  category: z.enum(["System", "Network", "Radio", "Radar", "Other"], {
-    required_error: "Please select a category",
-  }),
-  reportedAt: z.date({
-    required_error: "Please select a date and time",
-  }),
+  clientTicketNumber: z.string().optional(),
+  category: z.enum([
+    "System", 
+    "Network", 
+    "Radar", 
+    "Radio", 
+    "Camera", 
+    "Hardware", 
+    "Software", 
+    "Other"
+  ]),
   description: z.string().min(10, {
-    message: "Description must be at least 10 characters",
-  }).max(500, {
-    message: "Description must not exceed 500 characters",
+    message: "Description must be at least 10 characters.",
   }),
   isRecurring: z.boolean().default(false),
-  reportedBy: z.string().min(1, {
-    message: "Reporter name is required",
+  reportedBy: z.string().min(2, {
+    message: "Reported by must be at least 2 characters.",
   }),
-  location: z.string().min(1, {
-    message: "Location is required",
-  }),
-  radioId: z.string().optional(),
-  serverType: z.string().optional(),
-  radarNumber: z.string().optional(),
-  networkSystemType: z.string().optional(),
-  incidentTime: z.string().default("12:00"),
+  location: z.enum([
+    "Nicosia HQ", 
+    "Larnaca Airport", 
+    "Paphos Airport", 
+    "Remote Site A", 
+    "Remote Site B", 
+    "Remote Site C",
+    "Limassol Port",
+    "Unknown",
+    "Other"
+  ]),
+  reportedAt: z.date(),
 });
 
-type FormData = z.infer<typeof formSchema>;
-
-interface IncidentFormProps {
-  defaultReporter?: string;
-}
-
-const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporter = "" }) => {
+const IncidentForm = () => {
   const { addIncident } = useIncidents();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<IncidentCategory | null>(null);
-  
-  const form = useForm<FormData>({
+
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientTicketNumber: "",
-      category: undefined,
-      description: "",
+      category: "System",
       isRecurring: false,
-      reportedBy: defaultReporter,
+      reportedBy: user?.username || "",
+      location: "Nicosia HQ",
       reportedAt: new Date(),
-      location: "",
-      incidentTime: "12:00",
     },
   });
-  
-  const watchCategory = form.watch("category");
-  
-  React.useEffect(() => {
-    if (watchCategory) {
-      setSelectedCategory(watchCategory as IncidentCategory);
-    }
-  }, [watchCategory]);
-  
-  const onSubmit = (data: FormData) => {
-    const reportDate = new Date(data.reportedAt);
-    const [hours, minutes] = data.incidentTime.split(":").map(Number);
-    reportDate.setHours(hours, minutes);
-    
-    let additionalDetails = "";
-    if (data.category === "Radio" && data.radioId) {
-      additionalDetails = `Radio ID: ${data.radioId}`;
-    } else if (data.category === "System" && data.serverType) {
-      additionalDetails = `Server Type: ${data.serverType}`;
-    } else if (data.category === "Radar" && data.radarNumber) {
-      additionalDetails = `Radar Number: ${data.radarNumber}`;
-    } else if (data.category === "Network" && data.networkSystemType) {
-      additionalDetails = `Network System Type: ${data.networkSystemType}`;
-    }
-    
-    const enhancedDescription = additionalDetails 
-      ? `${data.description}\n\n${additionalDetails}`
-      : data.description;
-    
-    const newIncident = addIncident({
-      clientTicketNumber: data.clientTicketNumber,
-      category: data.category,
-      reportedAt: reportDate.toISOString(),
-      description: enhancedDescription,
-      isRecurring: data.isRecurring,
-      reportedBy: data.reportedBy,
-      location: data.location,
-    });
-    
-    navigate(`/user/incidents/${newIncident.id}`);
-  };
-  
-  const renderCategorySpecificFields = () => {
-    if (!selectedCategory) return null;
-    
-    switch (selectedCategory) {
-      case "Radio":
-        return (
-          <FormField
-            control={form.control}
-            name="radioId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Radio ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter the Radio ID" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      case "System":
-        return (
-          <FormField
-            control={form.control}
-            name="serverType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Server Type</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter the server type" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      case "Radar":
-        return (
-          <FormField
-            control={form.control}
-            name="radarNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Radar Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter the radar number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      case "Network":
-        return (
-          <FormField
-            control={form.control}
-            name="networkSystemType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Network System Type</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter the network system type" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-  
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    addIncident(data);
+    navigate("/user/incidents");
+  }
+
   return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle>Report a New Incident</CardTitle>
-        <CardDescription>
-          Fill in the details below to report a new incident in the system.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="clientTicketNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Client System Ticket Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter client ticket number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Incident Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="System">System</SelectItem>
-                        <SelectItem value="Network">Network</SelectItem>
-                        <SelectItem value="Radio">Radio</SelectItem>
-                        <SelectItem value="Radar">Radar</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {renderCategorySpecificFields()}
-              
-              <FormField
-                control={form.control}
-                name="reportedAt"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date of Incident</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="incidentTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time of Incident</FormLabel>
-                    <div className="flex items-center">
-                      <FormControl>
-                        <Input
-                          type="time"
-                          {...field}
-                          className="flex-1"
-                        />
-                      </FormControl>
-                      <Clock className="ml-2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter incident location" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="reportedBy"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reported By</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter name of reporter" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="isRecurring"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-8">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Is this a recurring incident?</FormLabel>
-                      <FormDescription>
-                        Check if this issue has happened before
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="clientTicketNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Client Ticket Number (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="CLIENT-123" {...field} />
+              </FormControl>
+              <FormDescription>
+                If the client has already raised a ticket, enter the ticket number.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="System">System</SelectItem>
+                  <SelectItem value="Network">Network</SelectItem>
+                  <SelectItem value="Radar">Radar</SelectItem>
+                  <SelectItem value="Radio">Radio</SelectItem>
+                  <SelectItem value="Camera">Camera</SelectItem>
+                  <SelectItem value="Hardware">Hardware</SelectItem>
+                  <SelectItem value="Software">Software</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Please select the most relevant category for this incident.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Detailed description of the incident"
+                  className="resize-none"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Provide a clear and detailed description of the incident.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isRecurring"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel>Is Recurring</FormLabel>
+                <FormDescription>
+                  Is this incident a recurring issue?
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="reportedBy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Reported By</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormDescription>
+                The name of the person reporting the incident.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a location" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Nicosia HQ">Nicosia HQ</SelectItem>
+                  <SelectItem value="Larnaca Airport">Larnaca Airport</SelectItem>
+                  <SelectItem value="Paphos Airport">Paphos Airport</SelectItem>
+                  <SelectItem value="Remote Site A">Remote Site A</SelectItem>
+                  <SelectItem value="Remote Site B">Remote Site B</SelectItem>
+                  <SelectItem value="Remote Site C">Remote Site C</SelectItem>
+                  <SelectItem value="Limassol Port">Limassol Port</SelectItem>
+                  <SelectItem value="Unknown">Unknown</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Please select the location where the incident occurred.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="reportedAt"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Reported At</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
                   <FormControl>
-                    <Textarea
-                      placeholder="Provide a detailed description of the incident"
-                      className="resize-none min-h-[120px]"
-                      {...field}
-                    />
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
                   </FormControl>
-                  <FormDescription>
-                    Please include all relevant details about the incident
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => navigate("/user/dashboard")}>
-                Cancel
-              </Button>
-              <Button type="submit">Submit Incident</Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date()
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>
+                Please select the date when the incident was reported.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
   );
 };
 
