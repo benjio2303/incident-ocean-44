@@ -1,9 +1,26 @@
 
-export type IncidentCategory = "System" | "Network" | "Radio" | "Radar" | "Other";
+export type IncidentCategory = 
+  | "System" 
+  | "Network" 
+  | "Radar" 
+  | "Radio" 
+  | "Camera" 
+  | "Hardware" 
+  | "Software" 
+  | "Other";
+
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
+
 export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "Nedeco";
-// Changed from enum to string to allow free text
-export type IncidentLocation = string;
+
+export type IncidentLocation = 
+  | "Nicosia HQ" 
+  | "Larnaca Airport" 
+  | "Paphos Airport" 
+  | "Remote Site A" 
+  | "Remote Site B" 
+  | "Remote Site C"
+  | "Other";
 
 export interface FileAttachment {
   id: string;
@@ -24,7 +41,7 @@ export interface TeamAssignment {
 
 export interface Incident {
   id: string;
-  clientTicketNumber: string;
+  clientTicketNumber?: string;
   internalTicketNumber: string;
   category: IncidentCategory;
   description: string;
@@ -38,24 +55,14 @@ export interface Incident {
   teamHistory: TeamAssignment[];
   currentTeam?: ResponsibleTeam;
   resolvingTeam?: ResponsibleTeam;
-  // Additional fields for specific categories (stored in description)
-  radioId?: string;
-  serverType?: string;
-  radarNumber?: string;
-  networkSystemType?: string;
 }
 
 export interface IncidentFormData {
-  clientTicketNumber: string;
+  clientTicketNumber?: string;
   category: IncidentCategory;
-  reportedAt: string;
   description: string;
   isRecurring: boolean;
   reportedBy: string;
   location: IncidentLocation;
-  // These are optional as they depend on the category
-  radioId?: string;
-  serverType?: string;
-  radarNumber?: string;
-  networkSystemType?: string;
+  reportedAt: string | Date;
 }

@@ -101,7 +101,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
       type: file.type,
       url: URL.createObjectURL(file),
       uploadedAt: new Date(),
-      uploadedBy: user?.name || user?.displayName || "Admin"
+      uploadedBy: user?.username || "Admin" // Changed from user?.name to user?.username
     }));
     
     assignTeam(incident.id, selectedTeam, teamNotes, fileAttachments);

@@ -41,7 +41,7 @@ const UserIncidentDetails: React.FC = () => {
           Back to Incidents
         </Button>
         
-        {user?.name === "Nedeco" && (
+        {user?.username === "Nedeco" && (
           <CloseIncidentButton 
             incident={incident} 
             onClose={() => navigate("/user/incidents")} 

@@ -28,10 +28,9 @@ const CloseIncidentButton: React.FC<CloseIncidentButtonProps> = ({ incident, onC
     }
   };
   
-  // Modified condition to check for Nedeco reporter with type safety
-  // Only show for open/in progress incidents and for reporter "Nedeco"
-  const isNedeco = user?.email?.toLowerCase().includes("nedeco") || 
-                  user?.displayName?.toLowerCase().includes("nedeco") || 
+  // Modified condition to check for Nedeco reporter with better type safety
+  const isNedeco = user?.username === "Nedeco" || 
+                  user?.displayName === "Nedeco" || 
                   incident.reportedBy.toLowerCase().includes("nedeco");
   
   if (incident.status === "Resolved" || !isNedeco) {
