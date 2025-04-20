@@ -9,133 +9,6 @@ const generateTicketNumber = (): string => {
   return `CY-${timestamp}-${random}`;
 };
 
-const sendEmailNotification = async (incident: Incident) => {
-  const emailAddresses = ["Amit.Arbel@elbitsystems.com", "Elbit.SupportCY@elbitsystems.com"];
-  const emailSubject = `New Incident Reported: ${incident.internalTicketNumber}`;
-  const emailBody = `
-    A new incident has been reported:
-    
-    Ticket Number: ${incident.internalTicketNumber}
-    Client Ticket: ${incident.clientTicketNumber || 'N/A'}
-    Category: ${incident.category}
-    Description: ${incident.description}
-    Location: ${incident.location}
-    Reported By: ${incident.reportedBy}
-    Reported At: ${incident.reportedAt.toLocaleString()}
-    
-    Please assign this incident to the appropriate team.
-  `;
-  
-  console.log("Sending email notification to:", emailAddresses);
-  console.log("Email subject:", emailSubject);
-  console.log("Email body:", emailBody);
-  
-  try {
-    const response = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: emailAddresses,
-        subject: emailSubject,
-        body: emailBody,
-        incident: incident,
-      }),
-    }).catch(() => {
-      console.log("Email would be sent in production environment");
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error sending email notification:", error);
-    return false;
-  }
-};
-
-const checkSLADeadline = (incident: Incident) => {
-  if (incident.status === "Resolved") return null;
-  
-  const openedTime = new Date(incident.openedAt).getTime();
-  const currentTime = new Date().getTime();
-  const twoHoursInMs = 2 * 60 * 60 * 1000;
-  const fourHoursInMs = 4 * 60 * 60 * 1000;
-  
-  const timeElapsed = currentTime - openedTime;
-  
-  if (timeElapsed >= fourHoursInMs) {
-    return "escalate";
-  } else if (timeElapsed >= twoHoursInMs) {
-    return "warning";
-  }
-  
-  return null;
-};
-
-const sendSLANotification = async (incident: Incident, type: "warning" | "escalate") => {
-  const emailAddresses = ["Amit.Arbel@elbitsystems.com", "Elbit.SupportCY@elbitsystems.com"];
-  let emailSubject = "";
-  let emailBody = "";
-  
-  if (type === "warning") {
-    emailSubject = `SLA Warning: 2 Hours Remaining for Incident ${incident.internalTicketNumber}`;
-    emailBody = `
-      Warning: The SLA deadline is approaching for incident ${incident.internalTicketNumber}.
-      
-      You have 2 hours remaining to resolve this incident before it must be escalated to Engineering.
-      
-      Incident Details:
-      Category: ${incident.category}
-      Description: ${incident.description}
-      Location: ${incident.location}
-      Current Team: ${incident.currentTeam || 'Unassigned'}
-      
-      Please take appropriate action.
-    `;
-  } else if (type === "escalate") {
-    emailSubject = `SLA Deadline Expired: Escalate Incident ${incident.internalTicketNumber} to Engineering`;
-    emailBody = `
-      URGENT: The SLA deadline has expired for incident ${incident.internalTicketNumber}.
-      
-      This incident must be escalated to Engineering immediately.
-      
-      Incident Details:
-      Category: ${incident.category}
-      Description: ${incident.description}
-      Location: ${incident.location}
-      Current Team: ${incident.currentTeam || 'Unassigned'}
-      
-      Please escalate this incident immediately.
-    `;
-  }
-  
-  console.log("Sending SLA notification to:", emailAddresses);
-  console.log("Email subject:", emailSubject);
-  console.log("Email body:", emailBody);
-  
-  try {
-    const response = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: emailAddresses,
-        subject: emailSubject,
-        body: emailBody,
-        incident: incident,
-      }),
-    }).catch(() => {
-      console.log("SLA email would be sent in production environment");
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error sending SLA notification:", error);
-    return false;
-  }
-};
-
 const mockIncidents: Incident[] = [
   {
     id: "1",
@@ -303,13 +176,15 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
           }
           return value;
         });
-        setIncidents(parsedIncidents);
+        setIncidents(parsedIncidents.length > 0 ? parsedIncidents : mockIncidents);
       } catch (error) {
         console.error("Error parsing incidents from localStorage:", error);
         setIncidents(mockIncidents);
+        localStorage.setItem("incidents", JSON.stringify(mockIncidents));
       }
     } else {
       setIncidents(mockIncidents);
+      localStorage.setItem("incidents", JSON.stringify(mockIncidents));
     }
   }, []);
 
