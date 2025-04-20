@@ -20,6 +20,8 @@ export type IncidentLocation =
   | "Remote Site A" 
   | "Remote Site B" 
   | "Remote Site C"
+  | "Limassol Port"
+  | "Unknown"
   | "Other";
 
 export interface FileAttachment {

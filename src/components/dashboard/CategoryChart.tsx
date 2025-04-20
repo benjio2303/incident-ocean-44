@@ -8,7 +8,7 @@ interface CategoryChartProps {
   incidents: Incident[];
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF00FF", "#00FFFF", "#FFFF00"];
 
 const CategoryChart: React.FC<CategoryChartProps> = ({ incidents }) => {
   // Count incidents by category
@@ -17,6 +17,9 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ incidents }) => {
     "Network": 0,
     "Radio": 0,
     "Radar": 0,
+    "Camera": 0,
+    "Hardware": 0,
+    "Software": 0,
     "Other": 0
   };
   
