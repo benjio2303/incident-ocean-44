@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { Incident, IncidentFormData, IncidentCategory, IncidentStatus, ResponsibleTeam, IncidentLocation } from "@/models/incident";
+import { Incident, IncidentFormData, IncidentCategory, IncidentStatus, ResponsibleTeam, IncidentLocation, FileAttachment } from "@/models/incident";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 
@@ -135,19 +135,6 @@ const sendSLANotification = async (incident: Incident, type: "warning" | "escala
     return false;
   }
 };
-
-interface IncidentContextType {
-  incidents: Incident[];
-  addIncident: (data: IncidentFormData) => Incident;
-  updateIncidentStatus: (id: string, status: IncidentStatus) => void;
-  assignTeam: (id: string, team: ResponsibleTeam, notes?: string, attachments?: FileAttachment[]) => void;
-  resolveIncident: (id: string) => void;
-  getIncidentById: (id: string) => Incident | undefined;
-  getUserIncidents: (username: string) => Incident[];
-  addAttachmentToAssignment: (incidentId: string, teamAssignmentIndex: number, attachment: FileAttachment) => void;
-}
-
-const IncidentContext = createContext<IncidentContextType | undefined>(undefined);
 
 const mockIncidents: Incident[] = [
   {
@@ -288,6 +275,19 @@ const mockIncidents: Incident[] = [
   }
 ];
 
+interface IncidentContextType {
+  incidents: Incident[];
+  addIncident: (data: IncidentFormData) => Incident;
+  updateIncidentStatus: (id: string, status: IncidentStatus) => void;
+  assignTeam: (id: string, team: ResponsibleTeam, notes?: string, attachments?: FileAttachment[]) => void;
+  resolveIncident: (id: string) => void;
+  getIncidentById: (id: string) => Incident | undefined;
+  getUserIncidents: (username: string) => Incident[];
+  addAttachmentToAssignment: (incidentId: string, teamAssignmentIndex: number, attachment: FileAttachment) => void;
+}
+
+const IncidentContext = createContext<IncidentContextType | undefined>(undefined);
+
 export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const { toast } = useToast();
@@ -319,58 +319,6 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [incidents]);
 
-  useEffect(() => {
-    const checkSLADeadlines = () => {
-      incidents.forEach(incident => {
-        if (incident.status === "Resolved") return;
-        
-        const slaStatus = checkSLADeadline(incident);
-        
-        const slaNotificationKey = `sla-notification-${incident.id}`;
-        const sentNotifications = localStorage.getItem(slaNotificationKey) ? 
-          JSON.parse(localStorage.getItem(slaNotificationKey) || '{}') : {};
-        
-        if (slaStatus === "warning" && !sentNotifications.warning) {
-          sendSLANotification(incident, "warning");
-          sentNotifications.warning = true;
-          localStorage.setItem(slaNotificationKey, JSON.stringify(sentNotifications));
-          
-          toast({
-            title: "SLA Warning",
-            description: `2 hours remaining for incident ${incident.internalTicketNumber}. Technicians need to resolve or escalate.`,
-            variant: "destructive",
-          });
-        } else if (slaStatus === "escalate" && !sentNotifications.escalate) {
-          sendSLANotification(incident, "escalate");
-          sentNotifications.escalate = true;
-          localStorage.setItem(slaNotificationKey, JSON.stringify(sentNotifications));
-          
-          if (incident.currentTeam === "Technicians") {
-            assignTeam(incident.id, "Engineering", "Auto-escalated due to SLA expiration");
-            
-            toast({
-              title: "SLA Deadline Expired - Auto-escalated",
-              description: `Incident ${incident.internalTicketNumber} has been escalated to Engineering after 4 hours`,
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "SLA Deadline Expired",
-              description: `Incident ${incident.internalTicketNumber} has exceeded the 4-hour SLA limit`,
-              variant: "destructive",
-            });
-          }
-        }
-      });
-    };
-    
-    checkSLADeadlines();
-    
-    const interval = setInterval(checkSLADeadlines, 60000);
-    
-    return () => clearInterval(interval);
-  }, [incidents, toast]);
-
   const addIncident = (data: IncidentFormData): Incident => {
     const newIncident: Incident = {
       id: uuidv4(),
@@ -390,11 +338,9 @@ export const IncidentProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     setIncidents(prev => [...prev, newIncident]);
     
-    sendEmailNotification(newIncident);
-    
     toast({
       title: "Incident Reported",
-      description: `Incident has been created with ticket number ${newIncident.internalTicketNumber}. Email notifications have been sent.`,
+      description: `Incident has been created with ticket number ${newIncident.internalTicketNumber}.`,
     });
     
     return newIncident;
