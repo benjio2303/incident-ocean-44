@@ -36,14 +36,6 @@ pipeline {
             }
         }
         
-        #stage('Docker Push') {
-         #   steps {
-          #      sh 'echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin'
-           #     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-            #    sh "docker push ${DOCKER_IMAGE}:latest"
-            #}
-        #}
-        
         stage('Deploy') {
             steps {
                 sh 'chmod +x ./scripts/deploy-jenkins.sh'
