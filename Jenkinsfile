@@ -12,6 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Use this more flexible checkout syntax that works with any branch name
                 checkout scm
             }
         }
@@ -45,6 +46,7 @@ pipeline {
         
         stage('Deploy') {
             steps {
+                sh 'chmod +x ./scripts/deploy-jenkins.sh'
                 sh './scripts/deploy-jenkins.sh'
             }
         }
@@ -53,6 +55,12 @@ pipeline {
     post {
         always {
             sh 'docker logout'
+        }
+        success {
+            echo 'Build and deployment completed successfully!'
+        }
+        failure {
+            echo 'Build or deployment failed. Check logs for details.'
         }
     }
 }
