@@ -1,3 +1,4 @@
+
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -66,7 +67,11 @@ const formSchema = z.object({
   reportedAt: z.date(),
 });
 
-const IncidentForm = () => {
+interface IncidentFormProps {
+  defaultReporterName?: string;
+}
+
+const IncidentForm: React.FC<IncidentFormProps> = ({ defaultReporterName = "" }) => {
   const { addIncident } = useIncidents();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -76,14 +81,25 @@ const IncidentForm = () => {
     defaultValues: {
       category: "System",
       isRecurring: false,
-      reportedBy: user?.username || "",
+      reportedBy: defaultReporterName || user?.username || "",
       location: "Nicosia HQ",
       reportedAt: new Date(),
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    addIncident(data);
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    // Make sure all required fields are present
+    const incidentData = {
+      clientTicketNumber: values.clientTicketNumber,
+      category: values.category,
+      description: values.description,
+      isRecurring: values.isRecurring,
+      reportedBy: values.reportedBy,
+      location: values.location,
+      reportedAt: values.reportedAt,
+    };
+    
+    addIncident(incidentData);
     navigate("/user/incidents");
   }
 
