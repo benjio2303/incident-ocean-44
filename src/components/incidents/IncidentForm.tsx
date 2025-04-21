@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -84,7 +83,6 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="reportedBy"
@@ -177,10 +175,10 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>מיקום התקלה</FormLabel>
+              <FormLabel>Incident Location</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="הזן מיקום חופשי — לדוג' 'נמל אשדוד ב', 'מגדל מס' 4', וכו'" 
+                  placeholder="Enter free text location, e.g., 'Ashdod Port B', 'Tower No. 4', etc." 
                   {...field} 
                 />
               </FormControl>
