@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,8 @@ export type UserRole = "user" | "admin" | null;
 const ADMIN_USERS = [
   { username: "ofek", password: "Aa123456", role: "admin" as UserRole },
   { username: "amit", password: "Aa123456", role: "admin" as UserRole },
+  { username: "engineer", password: "Aa123456", role: "admin" as UserRole },
+  { username: "denis", password: "Aa123456", role: "admin" as UserRole },
 ];
 
 interface User {
