@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -101,16 +100,6 @@ const LoginPage: React.FC = () => {
             </select>
           </div>
           {/* כפתור תאורה */}
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label={darkMode ? strings.light : strings.dark}
-            onClick={() => setDarkMode(val => !val)}
-            className="ml-2"
-          >
-            {darkMode ? <Sun /> : <Moon />}
-          </Button>
         </div>
 
         <div className="text-center mb-8">
