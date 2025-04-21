@@ -1,0 +1,46 @@
+
+jenkins:
+  systemMessage: "Jenkins for Cyprus Aviation Authority Incident Management System"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+  
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "docker-hub-credentials"
+              username: "dockerhub-username"  # Replace with your Docker Hub username
+              password: "dockerhub-password"  # Replace with your Docker Hub password
+              description: "Docker Hub Credentials"
+
+jobs:
+  - script: >
+      pipelineJob('cy-incident-management') {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/yourusername/your-repo.git')  # Replace with your GitHub repo URL
+                  credentials('github-credentials')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+        triggers {
+          scm('H/5 * * * *')
+        }
+      }

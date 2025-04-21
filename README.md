@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -52,7 +53,7 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
@@ -60,9 +61,53 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 
+## CI/CD Pipeline with Jenkins
+
+This project includes a complete CI/CD setup with Jenkins, Docker, and GitHub integration.
+
+### How to use the CI/CD pipeline:
+
+1. **Initial Setup**:
+   - Start the Jenkins container: `docker-compose up -d jenkins`
+   - Access Jenkins at: http://localhost:8090
+   - Login with username: `admin`, password: `admin`
+
+2. **Configure Credentials**:
+   - Navigate to Jenkins > Manage Jenkins > Manage Credentials
+   - Update the Docker Hub credentials with your actual username and password
+   - Add GitHub credentials if your repository is private
+
+3. **Pipeline Operation**:
+   - The pipeline will automatically check for changes in your GitHub repository
+   - When changes are detected, it will:
+     - Build the application
+     - Create a Docker image
+     - Push the image to Docker Hub
+     - Deploy the updated application
+
+4. **Manual Trigger**:
+   - You can also manually trigger builds from the Jenkins dashboard
+
+### What happens during the pipeline:
+
+- Code is pulled from GitHub
+- Dependencies are installed
+- Application is built
+- Docker image is created and tagged
+- Image is pushed to Docker Hub
+- Application is deployed using the latest image
+
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/5806e7c9-02ed-4561-84a8-facb88df13c4) and click on Share -> Publish.
+You have two options:
+
+1. **Automatic Deployment**:
+   - Push changes to the configured GitHub repository
+   - Let the Jenkins pipeline handle the deployment
+
+2. **Manual Deployment**:
+   - Use the Docker deployment script: `./scripts/deploy-docker.sh`
+   - Use Lovable: Click on Share -> Publish
 
 ## I want to use a custom domain - is that possible?
 
