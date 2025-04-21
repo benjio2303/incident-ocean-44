@@ -3,8 +3,6 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
-        // Change these values to match your Docker Hub username and image name
         DOCKER_IMAGE = "yourusername/cy-incident-management"
         DOCKER_TAG = "${env.BUILD_NUMBER}"
     }
@@ -12,7 +10,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Use this more flexible checkout syntax that works with any branch name
                 checkout scm
             }
         }
@@ -31,8 +28,14 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                script {
+                    // Check if Docker Hub credentials exist
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASS')]) {
+                        sh "docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASS}"
+                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                        sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    }
+                }
             }
         }
         
@@ -46,13 +49,19 @@ pipeline {
     
     post {
         always {
-            sh 'docker logout'
+            node {
+                sh 'docker logout || true'
+            }
         }
         success {
-            echo 'Build and deployment completed successfully!'
+            node {
+                echo 'Build and deployment completed successfully!'
+            }
         }
         failure {
-            echo 'Build or deployment failed. Check logs for details.'
+            node {
+                echo 'Build or deployment failed. Check logs for details.'
+            }
         }
     }
 }
