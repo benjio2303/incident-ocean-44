@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "8090:80"
     restart: unless-stopped
     depends_on:
       - mongodb
@@ -37,7 +37,7 @@ services:
       context: ./jenkins
       dockerfile: Jenkins.Dockerfile
     ports:
-      - "8090:8080"
+      - "8080:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
