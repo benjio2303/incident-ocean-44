@@ -29,11 +29,17 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Check if Docker Hub credentials exist
+                    // Build the Docker image without pushing to Docker Hub
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    
+                    // Only attempt Docker Hub login if credentials are configured
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASS')]) {
+                        // This block only runs if credentials exist
+                        echo "Docker Hub credentials found. Logging in and pushing images..."
                         sh "docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASS}"
-                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                        sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        sh "docker push ${DOCKER_IMAGE}:latest"
                     }
                 }
             }

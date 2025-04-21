@@ -12,9 +12,13 @@ if [ -z "$DOCKER_IMAGE" ] || [ -z "$DOCKER_TAG" ]; then
     exit 1
 fi
 
-# Pull the latest image
-echo "Pulling Docker image: $DOCKER_IMAGE:$DOCKER_TAG"
-docker pull $DOCKER_IMAGE:$DOCKER_TAG || { echo "Failed to pull image"; exit 1; }
+# Try to pull the image if it exists in the registry
+echo "Checking if Docker image exists in registry: $DOCKER_IMAGE:$DOCKER_TAG"
+if docker pull $DOCKER_IMAGE:$DOCKER_TAG &>/dev/null; then
+    echo "Image found in registry, using pulled image"
+else
+    echo "Image not found in registry, using locally built image"
+fi
 
 # Update the image tag in the docker-compose file
 echo "Updating docker-compose.yml with the new image tag"
