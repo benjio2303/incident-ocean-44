@@ -148,7 +148,7 @@ const LoginPage: React.FC = () => {
           <CardFooter className="flex flex-col space-y-2">
             <div className="text-sm text-gray-500 text-center">
               <p>Admin users:</p>
-              <p><strong>ofek</strong> or <strong>amit</strong> with password <strong>Aa123456</strong></p>
+              <p><strong>ofek</strong>, <strong>amit</strong>, <strong>engineer</strong> or <strong>denis</strong> with password <strong>Aa123456</strong></p>
               <p className="mt-2">Regular users:</p>
               <p>Any username/password combination will work</p>
             </div>
