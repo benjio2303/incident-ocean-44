@@ -55,19 +55,14 @@ pipeline {
     
     post {
         always {
-            node {
-                sh 'docker logout || true'
-            }
+            echo 'Always executed - cleaning up'
+            sh 'docker logout || true'
         }
         success {
-            node {
-                echo 'Build and deployment completed successfully!'
-            }
+            echo 'Build and deployment completed successfully!'
         }
         failure {
-            node {
-                echo 'Build or deployment failed. Check logs for details.'
-            }
+            echo 'Build or deployment failed. Check logs for details.'
         }
     }
 }
