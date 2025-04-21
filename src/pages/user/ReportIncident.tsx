@@ -18,7 +18,7 @@ const ReportIncident: React.FC = () => {
         </p>
       </div>
       
-      <IncidentForm defaultReporter={reporterName} />
+      <IncidentForm defaultReporterName={reporterName} />
     </div>
   );
 };
