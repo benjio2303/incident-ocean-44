@@ -14,6 +14,9 @@ RUN npm install
 # Copy the rest of the code
 COPY . .
 
+# Make sure index.html is in the right place
+RUN ls -la
+
 # Build the app
 RUN npm run build
 

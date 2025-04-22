@@ -27,6 +27,9 @@ cp Dockerfile $TEMP_DIR/
 cp nginx.conf $TEMP_DIR/
 cp README.md $TEMP_DIR/ 2>/dev/null || echo "No README.md found"
 
+# Root level files
+cp index.html $TEMP_DIR/ 2>/dev/null || echo "No index.html found at root"
+
 # Source code and built files
 cp -r src/ $TEMP_DIR/ 2>/dev/null || echo "No src directory found"
 cp -r public/ $TEMP_DIR/ 2>/dev/null || echo "No public directory found"

@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     strictPort: true, // Fail if port is already in use
   },
+  build: {
+    outDir: "dist",
+  },
+  root: ".", // Make sure this points to where index.html is located
   plugins: [
     react(),
     mode === 'development' &&

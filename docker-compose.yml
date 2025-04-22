@@ -10,6 +10,8 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    volumes:
+      - ./:/app  # Mount source for development
     depends_on:
       - mongodb
       - redis
