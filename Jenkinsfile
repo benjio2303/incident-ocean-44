@@ -1,41 +1,41 @@
-
 pipeline {
     agent any
-    
+
+    tools {
+        nodejs 'Node 18' // ⬅️ Replace with the name you used in Global Tool Configuration
+    }
+
     environment {
         DOCKER_IMAGE = "yourusername/cy-incident-management"
         DOCKER_TAG = "${env.BUILD_NUMBER}"
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
-        
+
         stage('Build') {
             steps {
                 sh 'npm run build'
             }
         }
-        
+
         stage('Docker Build') {
             steps {
                 script {
-                    // Build the Docker image without pushing to Docker Hub
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
-                    
-                    // Only attempt Docker Hub login if credentials are configured
+
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASS')]) {
-                        // This block only runs if credentials exist
                         echo "Docker Hub credentials found. Logging in and pushing images..."
                         sh "docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASS}"
                         sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
@@ -44,7 +44,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 sh 'chmod +x ./scripts/deploy-jenkins.sh'
@@ -52,7 +52,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             echo 'Always executed - cleaning up'
