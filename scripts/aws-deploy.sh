@@ -25,7 +25,10 @@ echo "Copying deployment files..."
 cp docker-compose.yml "$TEMP_DIR/"
 cp Dockerfile "$TEMP_DIR/"
 cp nginx.conf "$TEMP_DIR/"
+cp package.json "$TEMP_DIR/"
+cp package-lock.json "$TEMP_DIR/" 2>/dev/null || echo "No package-lock.json found"
 cp -r dist "$TEMP_DIR/" 2>/dev/null || echo "No dist folder found - you may need to build the application first"
+cp -r src "$TEMP_DIR/" 2>/dev/null || echo "No src folder found"
 
 # Copy deployment scripts
 mkdir -p "$TEMP_DIR/scripts"
@@ -181,4 +184,3 @@ echo "4. Run setup: ./aws-setup.sh"
 echo "5. Start system: ./start.sh or docker-compose up -d"
 echo ""
 echo "For more deployment options, see the included README.md"
-

@@ -5,7 +5,7 @@ FROM node:18-alpine as build
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json first
 COPY package*.json ./
 
 # Install dependencies
