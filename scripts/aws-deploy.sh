@@ -181,3 +181,4 @@ echo "4. Run setup: ./aws-setup.sh"
 echo "5. Start system: ./start.sh or docker-compose up -d"
 echo ""
 echo "For more deployment options, see the included README.md"
+
