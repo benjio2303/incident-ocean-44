@@ -141,30 +141,6 @@ If you encounter issues:
 3. Restart services: `docker-compose restart`
 EOF
 
-# Create a simple startup script
-cat > "$TEMP_DIR/start.sh" << 'EOF'
-#!/bin/bash
-# Start the Incident Management System
-
-# Pull latest images (optional)
-read -p "Pull latest images? (y/n): " pull_images
-if [ "$pull_images" = "y" ]; then
-  docker-compose pull
-fi
-
-# Start the containers
-echo "Starting Incident Management System..."
-docker-compose up -d
-
-echo "System is starting! You can access it at:"
-echo "http://localhost:8080 (or your server's IP address)"
-echo ""
-echo "To view logs: docker-compose logs -f"
-echo "To stop: docker-compose down"
-EOF
-
-chmod +x "$TEMP_DIR/start.sh"
-
 # Compress the package
 echo "Creating compressed deployment package..."
 tar -czvf "$PACKAGE_NAME" -C "$TEMP_DIR" .
@@ -184,3 +160,4 @@ echo "4. Run setup: ./aws-setup.sh"
 echo "5. Start system: ./start.sh or docker-compose up -d"
 echo ""
 echo "For more deployment options, see the included README.md"
+
