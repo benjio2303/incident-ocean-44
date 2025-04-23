@@ -14,7 +14,7 @@ import UserForm from "@/components/admin/UserForm";
 import ResetPasswordForm from "@/components/admin/ResetPasswordForm";
 import { User } from "@/models/user";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { UserEdit, UserPlus, Key, Trash2 } from "lucide-react";
+import { UserCog, UserPlus, Key, Trash2 } from "lucide-react";
 
 const UserManagement: React.FC = () => {
   const { users, deleteUser } = useAuth();
@@ -78,7 +78,7 @@ const UserManagement: React.FC = () => {
                       size="icon"
                       onClick={() => handleOpenEditModal(user)}
                     >
-                      <UserEdit className="h-4 w-4" />
+                      <UserCog className="h-4 w-4" />
                       <span className="sr-only">Edit user</span>
                     </Button>
                     <Button
