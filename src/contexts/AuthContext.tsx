@@ -2,27 +2,20 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-
-export type UserRole = "user" | "admin" | null;
+import { User, UserRole } from "@/models/user";
 
 // רשימת משתמשי אדמין + משתמש רגיל
-const ADMIN_USERS = [
-  { username: "ofek", password: "Aa123456", role: "admin" as UserRole },
-  { username: "amit", password: "Aa123456", role: "admin" as UserRole },
-  { username: "engineer", password: "Aa123456", role: "admin" as UserRole },
-  { username: "denis", password: "Aa123456", role: "admin" as UserRole },
-];
-// משתמש user נוסף עם שם cyprus וסיסמה 123456
-const USER_USERS = [
-  { username: "cyprus", password: "123456", role: "user" as UserRole },
+const INITIAL_ADMIN_USERS = [
+  { username: "ofek", password: "Aa123456", role: "admin" as UserRole, displayName: "Ofek Admin", email: "ofek@example.com" },
+  { username: "amit", password: "Aa123456", role: "admin" as UserRole, displayName: "Amit Admin", email: "amit@example.com" },
+  { username: "engineer", password: "Aa123456", role: "admin" as UserRole, displayName: "System Engineer", email: "engineer@example.com" },
+  { username: "denis", password: "Aa123456", role: "admin" as UserRole, displayName: "Denis Admin", email: "denis@example.com" },
 ];
 
-interface User {
-  username: string;
-  role: UserRole;
-  email?: string;
-  displayName?: string;
-}
+// משתמש user נוסף עם שם cyprus וסיסמה 123456
+const INITIAL_USER_USERS = [
+  { username: "cyprus", password: "123456", role: "user" as UserRole, displayName: "Cyprus User", email: "cyprus@example.com" },
+];
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +23,11 @@ interface AuthContextType {
   login: (username: string, password: string, selectedRole?: UserRole) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  users: User[];
+  addUser: (user: User) => void;
+  updateUser: (user: Omit<User, 'password'>) => void;
+  deleteUser: (username: string) => void;
+  resetPassword: (username: string, newPassword: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,66 +36,76 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const login = (username: string, password: string, selectedRole?: UserRole) => {
-    // בדיקת אדמין
-    const adminUser = ADMIN_USERS.find(
-      (user) => user.username.toLowerCase() === username.toLowerCase() && user.password === password
-    );
-    if (adminUser) {
-      setUser({
-        username,
-        role: adminUser.role,
-        displayName: username,
-        email: `${username}@example.com`
-      });
-      setRole(adminUser.role);
-      setIsAuthenticated(true);
-
-      sessionStorage.setItem("username", username);
-      sessionStorage.setItem("role", adminUser.role || "");
-      sessionStorage.setItem("isAuthenticated", "true");
-
-      toast({
-        title: "Login Successful",
-        description: `Welcome ${username}! You are logged in as ${adminUser.role}.`,
-      });
-
-      navigate("/admin/dashboard");
-      return;
+  // Initialize users from localStorage or default list
+  useEffect(() => {
+    const storedUsers = localStorage.getItem("users");
+    if (storedUsers) {
+      try {
+        setUsers(JSON.parse(storedUsers));
+      } catch (error) {
+        console.error("Error parsing users from localStorage:", error);
+        setUsers([...INITIAL_ADMIN_USERS, ...INITIAL_USER_USERS]);
+        localStorage.setItem("users", JSON.stringify([...INITIAL_ADMIN_USERS, ...INITIAL_USER_USERS]));
+      }
+    } else {
+      setUsers([...INITIAL_ADMIN_USERS, ...INITIAL_USER_USERS]);
+      localStorage.setItem("users", JSON.stringify([...INITIAL_ADMIN_USERS, ...INITIAL_USER_USERS]));
     }
+  }, []);
 
-    // בדיקת user ידוע מראש
-    const normalUser = USER_USERS.find(
+  // Update localStorage when users change
+  useEffect(() => {
+    if (users.length > 0) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+  }, [users]);
+
+  const login = (username: string, password: string, selectedRole?: UserRole) => {
+    // בדיקת משתמש קיים
+    const existingUser = users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
     );
-    if (normalUser) {
+
+    if (existingUser) {
       setUser({
-        username,
-        role: normalUser.role,
-        displayName: username,
-        email: `${username}@example.com`
+        username: existingUser.username,
+        role: existingUser.role,
+        displayName: existingUser.displayName || existingUser.username,
+        email: existingUser.email || `${existingUser.username}@example.com`
       });
-      setRole(normalUser.role);
+      setRole(existingUser.role);
       setIsAuthenticated(true);
 
-      sessionStorage.setItem("username", username);
-      sessionStorage.setItem("role", normalUser.role || "");
+      sessionStorage.setItem("username", existingUser.username);
+      sessionStorage.setItem("role", existingUser.role || "");
       sessionStorage.setItem("isAuthenticated", "true");
 
       toast({
         title: "Login Successful",
-        description: `Welcome ${username}! You are logged in as user.`,
+        description: `Welcome ${existingUser.displayName || existingUser.username}! You are logged in as ${existingUser.role}.`,
       });
 
-      navigate("/user/dashboard");
+      navigate(existingUser.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
       return;
     }
 
     // אפשרות fallback - כניסה כמשתמש רגיל לכל יתר האפשרויות
     if (username && password) {
+      const newUser: User = {
+        username,
+        role: selectedRole || "user",
+        displayName: username,
+        email: `${username}@example.com`,
+        password
+      };
+
+      // Add the new user
+      setUsers(prev => [...prev, newUser]);
+      
       setUser({
         username,
         role: selectedRole || "user",
@@ -143,25 +151,107 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate("/login");
   };
 
+  const addUser = (newUser: User) => {
+    // Check if username already exists
+    const userExists = users.some(u => u.username.toLowerCase() === newUser.username.toLowerCase());
+    if (userExists) {
+      toast({
+        title: "Error",
+        description: "A user with this username already exists.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUsers(prev => [...prev, newUser]);
+    toast({
+      title: "Success",
+      description: `User ${newUser.username} has been added successfully.`,
+    });
+  };
+
+  const updateUser = (updatedUser: Omit<User, 'password'>) => {
+    setUsers(prev => prev.map(u => 
+      u.username === updatedUser.username 
+        ? { ...u, ...updatedUser } 
+        : u
+    ));
+    
+    // Update current user if it's the one being edited
+    if (user?.username === updatedUser.username) {
+      setUser({ ...user, ...updatedUser });
+    }
+
+    toast({
+      title: "Success",
+      description: `User ${updatedUser.username} has been updated successfully.`,
+    });
+  };
+
+  const deleteUser = (username: string) => {
+    // Don't allow deleting the current user
+    if (user?.username === username) {
+      toast({
+        title: "Error",
+        description: "You cannot delete your own account while logged in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUsers(prev => prev.filter(u => u.username !== username));
+    
+    toast({
+      title: "Success",
+      description: `User ${username} has been deleted.`,
+    });
+  };
+
+  const resetPassword = (username: string, newPassword: string) => {
+    setUsers(prev => prev.map(u => 
+      u.username === username 
+        ? { ...u, password: newPassword } 
+        : u
+    ));
+    
+    toast({
+      title: "Success",
+      description: `Password for ${username} has been reset successfully.`,
+    });
+  };
+
   useEffect(() => {
     const storedUsername = sessionStorage.getItem("username");
     const storedRole = sessionStorage.getItem("role") as UserRole;
     const storedAuth = sessionStorage.getItem("isAuthenticated");
 
     if (storedAuth === "true" && storedRole && storedUsername) {
+      const storedUser = users.find(u => u.username === storedUsername);
+      
       setUser({
         username: storedUsername,
         role: storedRole,
-        displayName: storedUsername,
-        email: `${storedUsername}@example.com`
+        displayName: storedUser?.displayName || storedUsername,
+        email: storedUser?.email || `${storedUsername}@example.com`
       });
       setRole(storedRole);
       setIsAuthenticated(true);
     }
-  }, []);
+  }, [users]);
 
   return (
-    <AuthContext.Provider value={{ user, role, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      role, 
+      login, 
+      logout, 
+      isAuthenticated, 
+      users,
+      addUser,
+      updateUser,
+      deleteUser,
+      resetPassword
+    }}>
       {children}
     </AuthContext.Provider>
   );

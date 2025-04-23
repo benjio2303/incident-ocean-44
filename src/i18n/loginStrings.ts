@@ -1,5 +1,5 @@
 
-type Lang = "en" | "he";
+type Lang = "en" | "he" | "el";
 
 export const loginStrings: Record<Lang, Record<string, string>> = {
   en: {
@@ -39,5 +39,24 @@ export const loginStrings: Record<Lang, Record<string, string>> = {
     light: "בהיר",
     dark: "כהה",
     language: "שפה"
+  },
+  el: {
+    title: "CY Διαχείριση Περιστατικών",
+    subtitle: "Υπηρεσία Πολιτικής Αεροπορίας Κύπρου",
+    login: "Σύνδεση",
+    description: "Πρόσβαση στο σύστημα διαχείρισης περιστατικών",
+    username: "Όνομα χρήστη",
+    password: "Κωδικός πρόσβασης",
+    role: "Ρόλος",
+    selectRole: "Επιλέξτε τον ρόλο σας",
+    signIn: "Σύνδεση",
+    adminUsers: "Χρήστες διαχειριστή:",
+    adminExamples: "ofek, amit, engineer ή denis με κωδικό Aa123456",
+    userSection: "Κανονικοί χρήστες:",
+    userExample: "Όνομα χρήστη: cyprus, Κωδικός: 123456",
+    anyUser: "Οποιοσδήποτε συνδυασμός ονόματος χρήστη/κωδικού πρόσβασης θα λειτουργήσει",
+    light: "Φωτεινό",
+    dark: "Σκούρο",
+    language: "Γλώσσα"
   }
 };

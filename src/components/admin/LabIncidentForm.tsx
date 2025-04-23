@@ -1,40 +1,33 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Clock } from "lucide-react";
-import { format } from "date-fns";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { IncidentCategory, IncidentFormData, SpecificDetails } from "@/models/incident";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/contexts/TranslationContext";
+import { IncidentFormData } from "@/models/incident";
 
-const formSchema = z.object({
-  clientTicketNumber: z.string().optional(),
-  category: z.enum([
-    "System",
-    "Network",
-    "Radar",
-    "Radio",
-    "Camera",
-    "Laboratory",
-    "Other"
-  ] as [string, ...string[]]),
+interface LabIncidentFormProps {
+  defaultReporterName: string;
+  onSuccess: () => void;
+}
+
+const labFormSchema = z.object({
+  internalReference: z.string().optional(),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  isRecurring: z.boolean().default(false),
   reportedBy: z.string().min(2, {
     message: "Reporter name must be at least 2 characters.",
   }),
@@ -43,63 +36,42 @@ const formSchema = z.object({
   }),
   reportedAt: z.date(),
   reportedTime: z.string().optional(),
-  radioId: z.string().optional(),
-  radarNumber: z.string().optional(),
-  systemType: z.string().optional(),
+  priority: z.enum(["Low", "Medium", "High", "Critical"]),
 });
 
-const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string }) => {
+const LabIncidentForm: React.FC<LabIncidentFormProps> = ({ defaultReporterName, onSuccess }) => {
   const { addIncident } = useIncidents();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [selectedCategory, setSelectedCategory] = useState<string>("Other");
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof labFormSchema>>({
+    resolver: zodResolver(labFormSchema),
     defaultValues: {
       reportedBy: defaultReporterName || "",
-      category: "Other",
-      isRecurring: false,
+      priority: "Medium",
       reportedAt: new Date(),
       reportedTime: format(new Date(), "HH:mm"),
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    const specificDetails: SpecificDetails = {};
-
-    if (data.radioId) {
-      specificDetails.radioId = data.radioId;
-    }
-    if (data.radarNumber) {
-      specificDetails.radarNumber = data.radarNumber;
-    }
-    if (data.systemType) {
-      specificDetails.systemType = data.systemType;
-    }
-
+  const onSubmit = (data: z.infer<typeof labFormSchema>) => {
     const formData: IncidentFormData = {
-      clientTicketNumber: data.clientTicketNumber,
-      category: data.category as IncidentCategory,
-      description: data.description,
-      isRecurring: data.isRecurring,
+      clientTicketNumber: data.internalReference,
+      category: "Laboratory",
+      description: `[${data.priority}] ${data.description}`,
+      isRecurring: false,
       reportedBy: data.reportedBy,
       location: data.location,
       reportedAt: data.reportedAt,
       reportedTime: data.reportedTime,
-      specificDetails: Object.keys(specificDetails).length > 0 ? specificDetails : undefined
     };
 
     addIncident(formData);
     toast({
       title: t('success'),
-      description: t('incidentSubmitted'),
+      description: t('labIncidentSubmitted'),
     });
-    form.reset();
-  };
-
-  const categoryChanged = (category: string) => {
-    setSelectedCategory(category);
+    onSuccess();
   };
 
   // Generate time options for the 24-hour format
@@ -121,12 +93,12 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="clientTicketNumber"
+            name="internalReference"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('clientTicketNumber')}</FormLabel>
+                <FormLabel>Internal Reference</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('enterClientTicketNumber')} {...field} />
+                  <Input placeholder="Enter internal reference number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -155,7 +127,7 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder={t('describeIncident')} 
+                  placeholder="Describe the laboratory incident in detail" 
                   className="min-h-[120px]" 
                   {...field} 
                 />
@@ -165,110 +137,32 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('category')}</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    categoryChanged(value);
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('selectCategory')} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="System">System</SelectItem>
-                    <SelectItem value="Network">Network</SelectItem>
-                    <SelectItem value="Radar">Radar</SelectItem>
-                    <SelectItem value="Radio">Radio</SelectItem>
-                    <SelectItem value="Camera">Camera</SelectItem>
-                    <SelectItem value="Laboratory">Laboratory</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="isRecurring"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Priority</FormLabel>
+              <Select 
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority level" />
+                  </SelectTrigger>
                 </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>{t('isRecurring')}</FormLabel>
-                  <FormDescription>
-                    {t('recurringDescription')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Category-specific fields */}
-        {selectedCategory === "Radio" && (
-          <FormField
-            control={form.control}
-            name="radioId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Radio ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter Radio ID" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {selectedCategory === "Radar" && (
-          <FormField
-            control={form.control}
-            name="radarNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Radar Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter Radar Number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {selectedCategory === "System" && (
-          <FormField
-            control={form.control}
-            name="systemType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>System Type</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter System Type" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -278,7 +172,7 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
               <FormLabel>{t('incidentLocation')}</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder={t('locationPlaceholder')} 
+                  placeholder="Enter laboratory location" 
                   {...field} 
                 />
               </FormControl>
@@ -325,9 +219,6 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>
-                  {t('selectDateDescription')}
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -357,19 +248,23 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
                     ))}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  {t('selectTimeDescription')}
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <Button type="submit">{t('submit')}</Button>
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onSuccess}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            Create Laboratory Incident
+          </Button>
+        </div>
       </form>
     </Form>
   );
 };
 
-export default IncidentForm;
+export default LabIncidentForm;

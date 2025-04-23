@@ -5,8 +5,7 @@ export type IncidentCategory =
   | "Radar" 
   | "Radio" 
   | "Camera" 
-  | "Hardware" 
-  | "Software" 
+  | "Laboratory"
   | "Other";
 
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
@@ -41,6 +40,12 @@ export interface TeamAssignment {
   attachments?: FileAttachment[];
 }
 
+export interface SpecificDetails {
+  radioId?: string;
+  radarNumber?: string;
+  systemType?: string;
+}
+
 export interface Incident {
   id: string;
   clientTicketNumber?: string;
@@ -51,12 +56,14 @@ export interface Incident {
   reportedBy: string;
   location: IncidentLocation;
   reportedAt: Date;
+  reportedTime?: string; // Added field for 24h time
   openedAt: Date;
   closedAt?: Date;
   status: IncidentStatus;
   teamHistory: TeamAssignment[];
   currentTeam?: ResponsibleTeam;
   resolvingTeam?: ResponsibleTeam;
+  specificDetails?: SpecificDetails;
 }
 
 export interface IncidentFormData {
@@ -67,4 +74,6 @@ export interface IncidentFormData {
   reportedBy: string;
   location: IncidentLocation;
   reportedAt: string | Date;
+  reportedTime?: string;
+  specificDetails?: SpecificDetails;
 }

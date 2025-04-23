@@ -6,17 +6,19 @@ import IncidentList from "@/components/incidents/IncidentList";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import TeamPerformance from "@/components/dashboard/TeamPerformance";
 import LocationMap from "@/components/dashboard/LocationMap";
-import PowerBIEmbed from "@/components/powerbi/PowerBIEmbed";
 import ExportIncidents from "@/components/admin/ExportIncidents";
 import SLAStatistics from "@/components/dashboard/SLAStatistics";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import IncidentAnalytics from "@/components/admin/IncidentAnalytics";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard: React.FC = () => {
   const { incidents } = useIncidents();
   
   // Filter incidents for the dashboard
   const openIncidents = incidents.filter(inc => inc.status !== "Resolved");
+  const labIncidents = incidents.filter(inc => inc.category === "Laboratory");
   
   return (
     <div className="space-y-6">
@@ -27,7 +29,12 @@ const AdminDashboard: React.FC = () => {
             Overview of all incidents and system performance.
           </p>
         </div>
-        <ExportIncidents />
+        <div className="flex gap-3">
+          <Link to="/admin/users">
+            <Button variant="outline">Manage Users</Button>
+          </Link>
+          <ExportIncidents />
+        </div>
       </div>
       
       <StatsCards incidents={incidents} />
@@ -42,30 +49,54 @@ const AdminDashboard: React.FC = () => {
         <SLAStatistics incidents={incidents} />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Open Incidents</h2>
-              <Link to="/admin/incidents">
-                <Button variant="outline">View All Incidents</Button>
-              </Link>
-            </div>
-            
-            <IncidentList 
-              incidents={openIncidents} 
-              maxItems={5}
-              showFilters={false}
-            />
-          </div>
-        </div>
+      <Tabs defaultValue="open" className="w-full">
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="open">Open Incidents</TabsTrigger>
+          <TabsTrigger value="lab">Laboratory Incidents</TabsTrigger>
+        </TabsList>
         
-        <div className="lg:col-span-1">
-          <LocationMap incidents={incidents} />
-        </div>
-      </div>
+        <TabsContent value="open">
+          <div className="lg:col-span-2">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Open Incidents</h2>
+                <Link to="/admin/incidents">
+                  <Button variant="outline">View All Incidents</Button>
+                </Link>
+              </div>
+              
+              <IncidentList 
+                incidents={openIncidents} 
+                maxItems={5}
+                showFilters={false}
+                showTimer={true}
+              />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="lab">
+          <div className="lg:col-span-2">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Laboratory Incidents</h2>
+                <Link to="/admin/lab-incidents">
+                  <Button variant="outline">View All Lab Incidents</Button>
+                </Link>
+              </div>
+              
+              <IncidentList 
+                incidents={labIncidents} 
+                maxItems={5}
+                showFilters={false}
+                showTimer={true}
+              />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
       
-      <PowerBIEmbed />
+      <IncidentAnalytics incidents={incidents} />
     </div>
   );
 };
