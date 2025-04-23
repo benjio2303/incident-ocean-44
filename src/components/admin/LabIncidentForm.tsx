@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/contexts/TranslationContext";
-import { IncidentFormData } from "@/models/incident";
+import { IncidentFormData, IncidentLocation } from "@/models/incident";
 
 interface LabIncidentFormProps {
   defaultReporterName: string;
@@ -61,7 +61,7 @@ const LabIncidentForm: React.FC<LabIncidentFormProps> = ({ defaultReporterName, 
       description: `[${data.priority}] ${data.description}`,
       isRecurring: false,
       reportedBy: data.reportedBy,
-      location: data.location,
+      location: data.location as IncidentLocation, // Cast to IncidentLocation type
       reportedAt: data.reportedAt,
       reportedTime: data.reportedTime,
     };

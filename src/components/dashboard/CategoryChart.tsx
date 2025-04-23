@@ -12,19 +12,23 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF00FF"
 
 const CategoryChart: React.FC<CategoryChartProps> = ({ incidents }) => {
   // Count incidents by category
-  const categoryCounts: Record<IncidentCategory, number> = {
+  const categoryCounts: Record<string, number> = {
     "System": 0,
     "Network": 0,
     "Radio": 0,
     "Radar": 0,
     "Camera": 0,
-    "Hardware": 0,
-    "Software": 0,
+    "Laboratory": 0,
     "Other": 0
   };
   
   incidents.forEach(incident => {
-    categoryCounts[incident.category]++;
+    if (categoryCounts.hasOwnProperty(incident.category)) {
+      categoryCounts[incident.category]++;
+    } else {
+      // Handle any category not explicitly defined
+      categoryCounts["Other"]++;
+    }
   });
   
   // Convert to data for the chart

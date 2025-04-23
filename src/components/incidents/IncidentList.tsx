@@ -22,6 +22,7 @@ interface IncidentListProps {
   maxItems?: number;
   type?: "compact" | "full";
   role?: "user" | "admin";
+  showTimer?: boolean;
 }
 
 const statusColor = (status: IncidentStatus) => {
@@ -59,7 +60,8 @@ const IncidentList: React.FC<IncidentListProps> = ({
   showFilters = false,
   maxItems = Infinity,
   type = "full",
-  role = "admin"
+  role = "admin",
+  showTimer = false
 }) => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");

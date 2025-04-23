@@ -1,5 +1,5 @@
 
-export type UserRole = "user" | "admin";
+import { UserRole } from "@/contexts/AuthContext";
 
 export interface User {
   username: string;

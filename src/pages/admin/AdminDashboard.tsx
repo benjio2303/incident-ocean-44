@@ -69,7 +69,6 @@ const AdminDashboard: React.FC = () => {
                 incidents={openIncidents} 
                 maxItems={5}
                 showFilters={false}
-                showTimer={true}
               />
             </div>
           </div>
@@ -89,7 +88,6 @@ const AdminDashboard: React.FC = () => {
                 incidents={labIncidents} 
                 maxItems={5}
                 showFilters={false}
-                showTimer={true}
               />
             </div>
           </div>

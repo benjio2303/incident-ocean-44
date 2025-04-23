@@ -28,7 +28,6 @@ const LabIncidents: React.FC = () => {
             <Button>{t('createLabIncident')}</Button>
           </Link>
           <ExportIncidents 
-            incidents={labIncidents} 
             filename="lab-incidents" 
           />
         </div>

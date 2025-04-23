@@ -2,7 +2,10 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { User, UserRole } from "@/models/user";
+import { User } from "@/models/user";
+
+// Export UserRole type
+export type UserRole = "user" | "admin" | null;
 
 // רשימת משתמשי אדמין + משתמש רגיל
 const INITIAL_ADMIN_USERS = [
