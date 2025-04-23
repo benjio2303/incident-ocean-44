@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Incident } from "@/models/incident";
 import { useToast } from "@/hooks/use-toast";
 import { FileDown } from "lucide-react";
+import { useTranslation } from "@/contexts/TranslationContext";
 
 interface ExportIncidentsProps {
   incidents: Incident[];
@@ -12,6 +13,7 @@ interface ExportIncidentsProps {
 
 const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename = "incidents" }) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const exportToExcel = () => {
     // Format incidents data for export
@@ -22,19 +24,19 @@ const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename =
         .join(" → ");
       
       return {
-        "Client Ticket Number": incident.clientTicketNumber,
-        "Internal Ticket Number": incident.internalTicketNumber,
-        "Category": incident.category,
-        "Description": incident.description,
-        "Status": incident.status,
-        "Opening Date": incident.openedAt ? new Date(incident.openedAt).toLocaleDateString() : "",
-        "Closing Date": incident.closedAt ? new Date(incident.closedAt).toLocaleDateString() : "",
-        "Reported By": incident.reportedBy,
-        "Location": incident.location,
-        "Current Team": incident.currentTeam || "",
-        "Resolving Team": incident.resolvingTeam || "",
-        "Recurring": incident.isRecurring ? "Yes" : "No",
-        "Team Movement History": teamMovement,
+        [t('clientTicketNumber')]: incident.clientTicketNumber,
+        [t('internalTicketNumber')]: incident.internalTicketNumber,
+        [t('category')]: incident.category,
+        [t('description')]: incident.description,
+        [t('status')]: incident.status,
+        [t('openingDate')]: incident.openedAt ? new Date(incident.openedAt).toLocaleDateString() : "",
+        [t('closingDate')]: incident.closedAt ? new Date(incident.closedAt).toLocaleDateString() : "",
+        [t('reportedBy')]: incident.reportedBy,
+        [t('location')]: incident.location,
+        [t('currentTeam')]: incident.currentTeam || "",
+        [t('resolvingTeam')]: incident.resolvingTeam || "",
+        [t('recurring')]: incident.isRecurring ? t('yes') : t('no'),
+        [t('teamMovementHistory')]: teamMovement,
       };
     });
 
@@ -65,15 +67,15 @@ const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename =
     document.body.removeChild(link);
     
     toast({
-      title: "Export Successful",
-      description: `${incidents.length} incidents exported to CSV file.`,
+      title: t('exportSuccess'),
+      description: t('exportDescription', { count: incidents.length }),
     });
   };
 
   return (
     <Button onClick={exportToExcel} className="flex items-center gap-2">
       <FileDown size={16} />
-      Export to Excel
+      {t('exportToExcel')}
     </Button>
   );
 };
