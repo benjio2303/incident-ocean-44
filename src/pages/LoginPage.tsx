@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Lock, User, Moon, Sun, Globe } from "lucide-react";
+import { Lock, User, Globe } from "lucide-react";
 import { loginStrings } from "@/i18n/loginStrings";
 
 const formSchema = z.object({
@@ -50,7 +50,6 @@ const LoginPage: React.FC = () => {
   const [lang, setLang] = useState<"en" | "he">("en");
   const [darkMode, setDarkMode] = useState(false);
 
-  // משנה את ה־class של ה־html למצב כהה/בהיר
   React.useEffect(() => {
     const htmlEl = document.documentElement;
     if (darkMode) {
@@ -60,7 +59,6 @@ const LoginPage: React.FC = () => {
     }
   }, [darkMode]);
 
-  // שינוי כיוון הטקסט בהתאם לשפה
   React.useEffect(() => {
     document.body.dir = lang === "he" ? "rtl" : "ltr";
   }, [lang]);
@@ -81,17 +79,16 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cy-gray">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500">
       <div className="w-full max-w-md px-4">
 
         <div className="flex justify-between items-center mb-3">
-          {/* כפתור לשפה */}
           <div className="flex gap-2 items-center">
             <Globe />
             <select
               value={lang}
               onChange={e => setLang(e.target.value as "en" | "he")}
-              className="px-2 py-1 rounded border text-sm"
+              className="px-2 py-1 rounded border text-sm bg-white/60 backdrop-blur-md dark:bg-cy-darkGray/60"
               aria-label={strings.language}
             >
               {LANGUAGES.map(l => (
@@ -99,18 +96,21 @@ const LoginPage: React.FC = () => {
               ))}
             </select>
           </div>
-          {/* כפתור תאורה */}
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-cy-darkBlue">{strings.title}</h1>
-          <p className="text-gray-600 mt-2">{strings.subtitle}</p>
+          <h1 className="text-3xl font-bold text-cy-darkBlue dark:text-cy-lightBlue tracking-tight drop-shadow card-gradient bg-gradient-to-tr from-cy-darkBlue via-cy-blue to-cy-lightBlue bg-clip-text text-transparent">
+            {strings.title}
+          </h1>
+          <p className="text-gray-600 dark:text-cy-gray/80 mt-2">{strings.subtitle}</p>
         </div>
 
-        <Card>
+        <Card className="glass-morphism animate-[fade-in_0.7s_ease] shadow-xl border-none bg-white/70 dark:bg-cy-darkGray/70 transition-colors" style={{ backdropFilter: 'blur(12px)' }}>
           <CardHeader>
-            <CardTitle>{strings.login}</CardTitle>
-            <CardDescription>
+            <CardTitle className="tracking-wide font-semibold text-xl text-cy-darkBlue dark:text-cy-lightBlue">
+              {strings.login}
+            </CardTitle>
+            <CardDescription className="text-gray-500 dark:text-gray-300">
               {strings.description}
             </CardDescription>
           </CardHeader>
@@ -124,11 +124,11 @@ const LoginPage: React.FC = () => {
                     <FormItem>
                       <FormLabel>{strings.username}</FormLabel>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cy-darkBlue/50 dark:text-cy-lightBlue/60" size={18} />
                         <FormControl>
                           <Input
                             placeholder={strings.username}
-                            className="pl-10"
+                            className="pl-10 bg-white/80 dark:bg-cy-darkGray/40 focus:ring-cy-blue dark:focus:ring-cy-lightBlue shadow-sm"
                             {...field}
                           />
                         </FormControl>
@@ -145,12 +145,12 @@ const LoginPage: React.FC = () => {
                     <FormItem>
                       <FormLabel>{strings.password}</FormLabel>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cy-darkBlue/50 dark:text-cy-lightBlue/60" size={18} />
                         <FormControl>
                           <Input
                             type="password"
                             placeholder={strings.password}
-                            className="pl-10"
+                            className="pl-10 bg-white/80 dark:bg-cy-darkGray/40 focus:ring-cy-blue dark:focus:ring-cy-lightBlue shadow-sm"
                             {...field}
                           />
                         </FormControl>
@@ -168,7 +168,7 @@ const LoginPage: React.FC = () => {
                       <FormLabel>{strings.role}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white/80 dark:bg-cy-darkGray/40">
                             <SelectValue placeholder={strings.selectRole} />
                           </SelectTrigger>
                         </FormControl>
@@ -182,14 +182,17 @@ const LoginPage: React.FC = () => {
                   )}
                 />
 
-                <Button type="submit" className="w-full mt-4">
+                <Button
+                  type="submit"
+                  className="w-full mt-4 bg-cy-blue hover:bg-cy-darkBlue text-white tracking-wide font-semibold shadow-lg transition-all"
+                >
                   {strings.signIn}
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <div className="text-sm text-gray-500 text-center">
+            <div className="text-sm text-gray-500 dark:text-gray-300 text-center">
               <p>{strings.adminUsers}</p>
               <p>
                 <strong>ofek</strong>, <strong>amit</strong>,
