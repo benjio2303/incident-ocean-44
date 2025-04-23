@@ -3,8 +3,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User, UserRole } from "@/models/user";
-import { useAuth } from "@/contexts/AuthContext";
+import { User } from "@/models/user";
+import { UserRole, useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Form,

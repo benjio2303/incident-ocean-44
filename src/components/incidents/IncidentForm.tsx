@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +13,7 @@ import { CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { IncidentCategory, IncidentFormData, SpecificDetails } from "@/models/incident";
+import { IncidentCategory, IncidentFormData, SpecificDetails, IncidentLocation } from "@/models/incident";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useToast } from "@/hooks/use-toast";
@@ -84,7 +83,7 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
       description: data.description,
       isRecurring: data.isRecurring,
       reportedBy: data.reportedBy,
-      location: data.location,
+      location: data.location as IncidentLocation,
       reportedAt: data.reportedAt,
       reportedTime: data.reportedTime,
       specificDetails: Object.keys(specificDetails).length > 0 ? specificDetails : undefined
@@ -102,7 +101,6 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
     setSelectedCategory(category);
   };
 
-  // Generate time options for the 24-hour format
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -221,7 +219,6 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
           />
         </div>
 
-        {/* Category-specific fields */}
         {selectedCategory === "Radio" && (
           <FormField
             control={form.control}
