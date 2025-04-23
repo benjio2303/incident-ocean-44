@@ -12,9 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import IncidentAnalytics from "@/components/admin/IncidentAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "@/contexts/TranslationContext";
 
 const AdminDashboard: React.FC = () => {
   const { incidents } = useIncidents();
+  const { t } = useTranslation();
   
   // Filter incidents for the dashboard
   const openIncidents = incidents.filter(inc => inc.status !== "Resolved");
@@ -24,16 +26,19 @@ const AdminDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('dashboard')}</h1>
           <p className="text-muted-foreground">
-            Overview of all incidents and system performance.
+            {t('overviewOfAllIncidents') || "Overview of all incidents and system performance."}
           </p>
         </div>
         <div className="flex gap-3">
-          <Link to="/admin/users">
-            <Button variant="outline">Manage Users</Button>
+          <Link to="/admin/lab-incidents/new">
+            <Button>{t('createLabIncident')}</Button>
           </Link>
-          <ExportIncidents />
+          <Link to="/admin/users">
+            <Button variant="outline">{t('manageUsers')}</Button>
+          </Link>
+          <ExportIncidents incidents={incidents} />
         </div>
       </div>
       
@@ -45,23 +50,23 @@ const AdminDashboard: React.FC = () => {
       </div>
       
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">SLA Performance</h2>
+        <h2 className="text-xl font-semibold">{t('slaPerformance') || "SLA Performance"}</h2>
         <SLAStatistics incidents={incidents} />
       </div>
       
       <Tabs defaultValue="open" className="w-full">
         <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="open">Open Incidents</TabsTrigger>
-          <TabsTrigger value="lab">Laboratory Incidents</TabsTrigger>
+          <TabsTrigger value="open">{t('openIncidents') || "Open Incidents"}</TabsTrigger>
+          <TabsTrigger value="lab">{t('labIncidents')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="open">
           <div className="lg:col-span-2">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Open Incidents</h2>
+                <h2 className="text-xl font-semibold">{t('openIncidents') || "Open Incidents"}</h2>
                 <Link to="/admin/incidents">
-                  <Button variant="outline">View All Incidents</Button>
+                  <Button variant="outline">{t('viewAll') || "View All Incidents"}</Button>
                 </Link>
               </div>
               
@@ -78,9 +83,9 @@ const AdminDashboard: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Laboratory Incidents</h2>
+                <h2 className="text-xl font-semibold">{t('labIncidents')}</h2>
                 <Link to="/admin/lab-incidents">
-                  <Button variant="outline">View All Lab Incidents</Button>
+                  <Button variant="outline">{t('viewAll') || "View All Lab Incidents"}</Button>
                 </Link>
               </div>
               
