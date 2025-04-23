@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Card,
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Lock, User, Globe } from "lucide-react";
+import { Lock, User } from "lucide-react";
 import { loginStrings } from "@/i18n/loginStrings";
 import {
   Tabs,
@@ -37,6 +37,8 @@ import {
   TabsTrigger,
   TabsContent
 } from "@/components/ui/tabs";
+import LoginHeader from "@/components/login/LoginHeader";
+import LanguageSelector from "@/components/login/LanguageSelector";
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -46,14 +48,9 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "he", label: "עברית" },
-];
-
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
-  const [lang, setLang] = useState<"en" | "he">("he");
+  const [lang, setLang] = useState<"en" | "he" | "el">("he");
   const [darkMode, setDarkMode] = useState(false);
 
   React.useEffect(() => {
@@ -69,7 +66,7 @@ const LoginPage: React.FC = () => {
     document.body.dir = lang === "he" ? "rtl" : "ltr";
   }, [lang]);
 
-  const strings = loginStrings[lang];
+  const strings = loginStrings[lang as "en" | "he" | "el"];
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -85,19 +82,13 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500 relative">
       <div className="w-full max-w-md px-4">
-        <div className="flex flex-col items-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-cy-darkBlue via-cy-blue to-cy-lightBlue bg-clip-text text-transparent mb-2 uppercase">
-            {strings.title}
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-cy-gray/80 font-medium text-center">
-            {strings.subtitle}
-          </p>
-        </div>
-        
+        {/* כותרת ממורכזת ומעוצבת */}
+        <LoginHeader lang={lang as "en" | "he" | "el"} />
+
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="w-full mb-3 grid grid-cols-2 rounded-lg shadow">
+          <TabsList className="w-full mb-3 grid grid-cols-2 rounded-lg shadow bg-white/80 dark:bg-cy-darkGray/60">
             <TabsTrigger className="rounded-l-lg data-[state=active]:bg-cy-blue/90 data-[state=active]:text-white" value="login">
               {strings.login}
             </TabsTrigger>
@@ -106,12 +97,12 @@ const LoginPage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            <Card className="glass-morphism animate-[fade-in_0.7s_ease] shadow-xl border-none bg-white/70 dark:bg-cy-darkGray/70 transition-colors" style={{ backdropFilter: 'blur(12px)' }}>
+            <Card className="glass-morphism animate-[fade-in_0.7s_ease] shadow-xl border-none bg-white/80 dark:bg-cy-darkGray/80 transition-colors" style={{ backdropFilter: 'blur(12px)' }}>
               <CardHeader>
-                <CardTitle className="tracking-wide font-semibold text-xl text-cy-darkBlue dark:text-cy-lightBlue">
+                <CardTitle className="tracking-wide font-semibold text-xl text-cy-darkBlue dark:text-cy-lightBlue text-center">
                   {strings.login}
                 </CardTitle>
-                <CardDescription className="text-gray-500 dark:text-gray-300">
+                <CardDescription className="text-gray-500 dark:text-gray-300 text-center">
                   {strings.description}
                 </CardDescription>
               </CardHeader>
@@ -199,22 +190,7 @@ const LoginPage: React.FC = () => {
                 </span>
               </CardFooter>
             </Card>
-
-            <div className="absolute top-7 right-7">
-              <div className="flex gap-2 items-center">
-                <Globe />
-                <select
-                  value={lang}
-                  onChange={e => setLang(e.target.value as "en" | "he")}
-                  className="px-2 py-1 rounded border text-sm bg-white/60 backdrop-blur-md dark:bg-cy-darkGray/60"
-                  aria-label={strings.language}
-                >
-                  {LANGUAGES.map(l => (
-                    <option value={l.code} key={l.code}>{l.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <LanguageSelector lang={lang} setLang={setLang} />
           </TabsContent>
 
           <TabsContent value="info">
@@ -257,9 +233,9 @@ const LoginPage: React.FC = () => {
                 </span>
               </CardFooter>
             </Card>
+            <LanguageSelector lang={lang} setLang={setLang} />
           </TabsContent>
         </Tabs>
-
       </div>
     </div>
   );
