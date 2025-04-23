@@ -5,9 +5,11 @@ import IncidentList from "@/components/incidents/IncidentList";
 import ExportIncidents from "@/components/admin/ExportIncidents";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/contexts/TranslationContext";
 
 const LabIncidents: React.FC = () => {
   const { incidents } = useIncidents();
+  const { t } = useTranslation();
   
   // Filter for laboratory incidents
   const labIncidents = incidents.filter(inc => inc.category === "Laboratory");
@@ -16,23 +18,25 @@ const LabIncidents: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Laboratory Incidents</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('labIncidents')}</h1>
           <p className="text-muted-foreground">
-            View and manage all laboratory incidents in the system.
+            {t('labIncidents')}
           </p>
         </div>
         <div className="flex gap-3">
           <Link to="/admin/lab-incidents/new">
-            <Button>Create Lab Incident</Button>
+            <Button>{t('createLabIncident')}</Button>
           </Link>
-          <ExportIncidents incidents={labIncidents} filename="lab-incidents" />
+          <ExportIncidents 
+            incidents={labIncidents} 
+            filename="lab-incidents" 
+          />
         </div>
       </div>
       
       <IncidentList 
         incidents={labIncidents} 
-        showFilters={true} 
-        showTimer={true}
+        showFilters={true}
       />
     </div>
   );

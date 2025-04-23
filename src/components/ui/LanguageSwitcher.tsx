@@ -7,7 +7,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Language as LanguageIcon } from "lucide-react";
+import { Languages } from "lucide-react";
 
 const LanguageSwitcher: React.FC = () => {
   const { language, setLanguage, availableLanguages } = useTranslation();
@@ -29,7 +29,7 @@ const LanguageSwitcher: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          <LanguageIcon className="h-4 w-4 mr-2" />
+          <Languages className="h-4 w-4 mr-2" />
           {getLanguageLabel(language)}
         </Button>
       </DropdownMenuTrigger>
