@@ -66,9 +66,12 @@ const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename =
     link.click();
     document.body.removeChild(link);
     
+    // Fix: Format the description string separately so we can use it correctly
+    const countText = t('exportDescription').replace('{count}', incidents.length.toString());
+    
     toast({
       title: t('exportSuccess'),
-      description: t('exportDescription', { count: incidents.length })
+      description: countText
     });
   };
 
