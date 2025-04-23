@@ -68,7 +68,7 @@ const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename =
     
     toast({
       title: t('exportSuccess'),
-      description: t('exportDescription', { count: incidents.length }),
+      description: t('exportDescription', { count: incidents.length })
     });
   };
 
