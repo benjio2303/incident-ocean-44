@@ -1,12 +1,16 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useIncidents } from "@/contexts/IncidentContext";
+import { Incident } from "@/models/incident";
 import { useToast } from "@/hooks/use-toast";
 import { FileDown } from "lucide-react";
 
-const ExportIncidents: React.FC = () => {
-  const { incidents } = useIncidents();
+interface ExportIncidentsProps {
+  incidents: Incident[];
+  filename?: string;
+}
+
+const ExportIncidents: React.FC<ExportIncidentsProps> = ({ incidents, filename = "incidents" }) => {
   const { toast } = useToast();
 
   const exportToExcel = () => {
@@ -55,7 +59,7 @@ const ExportIncidents: React.FC = () => {
     const link = document.createElement("a");
     
     link.setAttribute("href", url);
-    link.setAttribute("download", `incidents_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `${filename}_export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
