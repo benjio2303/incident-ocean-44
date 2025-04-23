@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -88,21 +87,15 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500">
       <div className="w-full max-w-md px-4">
-        {/* באנר עליון חדש להרגשה מקצועית */}
         <div className="flex flex-col items-center mb-8">
-          <img
-            src="/favicon.ico"
-            alt="CY Logo"
-            className="w-16 h-16 mb-2 drop-shadow"
-            style={{ filter: "drop-shadow(0 0 8px #428df5AA)" }}
-          />
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-tl from-cy-darkBlue via-cy-lightBlue to-cy-blue bg-clip-text text-transparent mb-0.5">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-cy-darkBlue via-cy-blue to-cy-lightBlue bg-clip-text text-transparent mb-2 uppercase">
             {strings.title}
           </h1>
-          <p className="text-gray-600 dark:text-cy-gray/80 font-medium">{strings.subtitle}</p>
+          <p className="text-lg text-gray-600 dark:text-cy-gray/80 font-medium text-center">
+            {strings.subtitle}
+          </p>
         </div>
         
-        {/* טאבים: התחברות / פרטי התחברות */}
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="w-full mb-3 grid grid-cols-2 rounded-lg shadow">
             <TabsTrigger className="rounded-l-lg data-[state=active]:bg-cy-blue/90 data-[state=active]:text-white" value="login">
@@ -112,7 +105,6 @@ const LoginPage: React.FC = () => {
               {lang === "he" ? "להסבר ודוגמאות" : "Help / Examples"}
             </TabsTrigger>
           </TabsList>
-          {/* טאב 1: התחברות */}
           <TabsContent value="login">
             <Card className="glass-morphism animate-[fade-in_0.7s_ease] shadow-xl border-none bg-white/70 dark:bg-cy-darkGray/70 transition-colors" style={{ backdropFilter: 'blur(12px)' }}>
               <CardHeader>
@@ -208,7 +200,6 @@ const LoginPage: React.FC = () => {
               </CardFooter>
             </Card>
 
-            {/* סרגל שפות למעלה מימין */}
             <div className="absolute top-7 right-7">
               <div className="flex gap-2 items-center">
                 <Globe />
@@ -226,7 +217,6 @@ const LoginPage: React.FC = () => {
             </div>
           </TabsContent>
 
-          {/* טאב 2: הסבר/דוגמאות משתמשים */}
           <TabsContent value="info">
             <Card className="glass-morphism shadow-xl border-none p-6 bg-white/90 dark:bg-cy-darkGray/90 animate-[fade-in_0.7s_ease]">
               <CardHeader>
