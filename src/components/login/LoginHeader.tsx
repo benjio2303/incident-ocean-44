@@ -4,7 +4,7 @@ import { loginStrings } from "@/i18n/loginStrings";
 import SiteTitle from "./SiteTitle";
 
 interface LoginHeaderProps {
-  lang: "en" | "he" | "el";
+  lang: "en";
 }
 
 const LoginHeader: React.FC<LoginHeaderProps> = ({ lang }) => {

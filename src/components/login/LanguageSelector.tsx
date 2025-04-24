@@ -4,14 +4,12 @@ import { Globe } from "lucide-react";
 import { loginStrings } from "@/i18n/loginStrings";
 
 interface LanguageSelectorProps {
-  lang: "en" | "he" | "el";
-  setLang: (l: "en" | "he" | "el") => void;
+  lang: "en";
+  setLang: (l: "en") => void;
 }
 
 const LANGUAGES = [
   { code: "en", label: "English" },
-  { code: "he", label: "עברית" },
-  { code: "el", label: "Ελληνικά" },
 ];
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ lang, setLang }) => {
@@ -22,7 +20,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ lang, setLang }) =>
         <Globe />
         <select
           value={lang}
-          onChange={e => setLang(e.target.value as "en" | "he" | "el")}
+          onChange={e => setLang(e.target.value as "en")}
           className="px-2 py-0.5 rounded border text-sm bg-transparent"
           aria-label={strings.language}
         >
