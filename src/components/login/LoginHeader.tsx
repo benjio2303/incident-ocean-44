@@ -11,9 +11,6 @@ const LoginHeader: React.FC = () => {
         {strings.title}
       </SiteTitle>
       <div className="w-14 h-1 mx-auto mt-2 rounded-full bg-gradient-to-r from-cy-darkBlue via-cy-blue to-cy-lightBlue opacity-50" aria-hidden />
-      <p className="text-lg font-semibold text-gray-600 dark:text-cy-gray/80 pt-1 text-center">
-        {strings.subtitle}
-      </p>
     </header>
   );
 };

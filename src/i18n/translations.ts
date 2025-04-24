@@ -1,4 +1,3 @@
-
 import { loginStrings } from "./loginStrings";
 
 export type Language = "en" | "he" | "el";
