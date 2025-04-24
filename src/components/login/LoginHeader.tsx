@@ -3,12 +3,8 @@ import React from "react";
 import { loginStrings } from "@/i18n/loginStrings";
 import SiteTitle from "./SiteTitle";
 
-interface LoginHeaderProps {
-  lang: "en";
-}
-
-const LoginHeader: React.FC<LoginHeaderProps> = ({ lang }) => {
-  const strings = loginStrings[lang];
+const LoginHeader: React.FC = () => {
+  const strings = loginStrings.en;
   return (
     <header className="w-full flex flex-col items-center mb-8">
       <SiteTitle>

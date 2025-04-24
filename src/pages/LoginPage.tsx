@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -38,7 +37,6 @@ import {
   TabsContent
 } from "@/components/ui/tabs";
 import LoginHeader from "@/components/login/LoginHeader";
-import LanguageSelector from "@/components/login/LanguageSelector";
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -49,8 +47,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const LoginPage: React.FC = () => {
-  const auth = useAuth(); // Get the auth context properly
-  const [lang, setLang] = useState<"en">("en"); // Only English is supported
+  const auth = useAuth();
   const [darkMode, setDarkMode] = useState(false);
 
   React.useEffect(() => {
@@ -62,8 +59,7 @@ const LoginPage: React.FC = () => {
     }
   }, [darkMode]);
 
-  // No need to change document direction since we only support English
-  const strings = loginStrings[lang];
+  const strings = loginStrings.en;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -83,8 +79,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500 relative">
       <div className="w-full max-w-md px-4">
-        <LoginHeader lang={lang} />
-
+        <LoginHeader />
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="w-full mb-3 grid grid-cols-2 rounded-lg shadow bg-white/80 dark:bg-cy-darkGray/60">
             <TabsTrigger className="rounded-l-lg data-[state=active]:bg-cy-blue/90 data-[state=active]:text-white" value="login">
@@ -188,7 +183,6 @@ const LoginPage: React.FC = () => {
                 </span>
               </CardFooter>
             </Card>
-            <LanguageSelector lang={lang} setLang={setLang} />
           </TabsContent>
 
           <TabsContent value="info">
@@ -229,7 +223,6 @@ const LoginPage: React.FC = () => {
                 </span>
               </CardFooter>
             </Card>
-            <LanguageSelector lang={lang} setLang={setLang} />
           </TabsContent>
         </Tabs>
       </div>
