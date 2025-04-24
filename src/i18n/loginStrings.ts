@@ -1,4 +1,5 @@
 
+// Define only English as the language
 type Lang = "en";
 
 export const loginStrings: Record<Lang, Record<string, string>> = {

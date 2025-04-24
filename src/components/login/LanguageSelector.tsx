@@ -8,6 +8,7 @@ interface LanguageSelectorProps {
   setLang: (l: "en") => void;
 }
 
+// Only English language is available
 const LANGUAGES = [
   { code: "en", label: "English" },
 ];

@@ -49,8 +49,8 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const LoginPage: React.FC = () => {
-  const { login } = useAuth();
-  const [lang, setLang] = useState<"en" | "he" | "el">("he");
+  const auth = useAuth(); // Get the auth context properly
+  const [lang, setLang] = useState<"en">("en"); // Only English is supported
   const [darkMode, setDarkMode] = useState(false);
 
   React.useEffect(() => {
@@ -62,11 +62,8 @@ const LoginPage: React.FC = () => {
     }
   }, [darkMode]);
 
-  React.useEffect(() => {
-    document.body.dir = lang === "he" ? "rtl" : "ltr";
-  }, [lang]);
-
-  const strings = loginStrings[lang as "en" | "he" | "el"];
+  // No need to change document direction since we only support English
+  const strings = loginStrings[lang];
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -78,14 +75,15 @@ const LoginPage: React.FC = () => {
   });
 
   const onSubmit = (data: FormData) => {
-    login(data.username, data.password, data.role as UserRole);
+    if (auth && auth.login) {
+      auth.login(data.username, data.password, data.role as UserRole);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cy-blue via-cy-lightBlue to-cy-gray dark:from-cy-darkGray dark:via-cy-darkBlue dark:to-gray-900 transition-all duration-500 relative">
       <div className="w-full max-w-md px-4">
-        {/* כותרת ממורכזת ומעוצבת */}
-        <LoginHeader lang={lang as "en" | "he" | "el"} />
+        <LoginHeader lang={lang} />
 
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="w-full mb-3 grid grid-cols-2 rounded-lg shadow bg-white/80 dark:bg-cy-darkGray/60">
@@ -93,7 +91,7 @@ const LoginPage: React.FC = () => {
               {strings.login}
             </TabsTrigger>
             <TabsTrigger className="rounded-r-lg data-[state=active]:bg-cy-darkBlue/80 data-[state=active]:text-white" value="info">
-              {lang === "he" ? "להסבר ודוגמאות" : "Help / Examples"}
+              Help / Examples
             </TabsTrigger>
           </TabsList>
           <TabsContent value="login">
@@ -165,8 +163,8 @@ const LoginPage: React.FC = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="user">{lang === "he" ? "משתמש" : "User"}</SelectItem>
-                              <SelectItem value="admin">{lang === "he" ? "אדמין" : "Admin"}</SelectItem>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -186,7 +184,7 @@ const LoginPage: React.FC = () => {
               <CardFooter className="flex justify-center mt-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span>🔒</span>
-                  {lang === "he" ? "פרטי הרשאה ודוגמות -->" : "See login examples -->"}
+                  See login examples -->
                 </span>
               </CardFooter>
             </Card>
@@ -197,7 +195,7 @@ const LoginPage: React.FC = () => {
             <Card className="glass-morphism shadow-xl border-none p-6 bg-white/90 dark:bg-cy-darkGray/90 animate-[fade-in_0.7s_ease]">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-cy-darkBlue dark:text-cy-lightBlue">
-                  {lang === "he" ? "פרטי התחברות לדוגמה" : "Login Examples"}
+                  Login Examples
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -208,9 +206,9 @@ const LoginPage: React.FC = () => {
                       <span className="font-mono rounded px-1 bg-gray-100 dark:bg-gray-700">ofek</span>,{" "}
                       <span className="font-mono rounded px-1 bg-gray-100 dark:bg-gray-700">amit</span>,{" "}
                       <span className="font-mono rounded px-1 bg-gray-100 dark:bg-gray-700">engineer</span>{" "}
-                      {lang === "he" ? "או" : "or"}{" "}
+                      or{" "}
                       <span className="font-mono rounded px-1 bg-gray-100 dark:bg-gray-700">denis</span>{" "}
-                      {lang === "he" ? "עם סיסמה" : "with password"}{" "}
+                      with password{" "}
                       <span className="font-mono rounded px-1 bg-cy-blue/80 text-white dark:bg-cy-darkBlue">{'Aa123456'}</span>
                     </p>
                   </div>
@@ -227,9 +225,7 @@ const LoginPage: React.FC = () => {
               </CardContent>
               <CardFooter className="pt-3 flex flex-col items-center text-xs text-gray-400">
                 <span>
-                  {lang === "he"
-                    ? "לקבלת הרשאות, העתק את הפרטים לדוגמא והיכנס בהתאם"
-                    : "To log in as an admin or user, copy the relevant example."}
+                  To log in as an admin or user, copy the relevant example.
                 </span>
               </CardFooter>
             </Card>
