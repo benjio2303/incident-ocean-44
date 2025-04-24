@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, BarChart4, User, AlertCircle } from "lucide-react";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "@/contexts/TranslationContext";
 
 const Navbar: React.FC = () => {
@@ -52,7 +51,6 @@ const Navbar: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <LanguageSwitcher />
             <div className="hidden md:block font-medium">
               {role === "admin" ? t('adminPortal') : t('userPortal')}
             </div>

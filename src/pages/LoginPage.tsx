@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Card,
@@ -179,7 +180,7 @@ const LoginPage: React.FC = () => {
               <CardFooter className="flex justify-center mt-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span>🔒</span>
-                  See login examples -->
+                  See login examples {'->'} 
                 </span>
               </CardFooter>
             </Card>
