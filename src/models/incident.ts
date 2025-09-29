@@ -12,11 +12,15 @@ export type IncidentCategory =
   | "Drone";
 
 export type ITSubcategory = 
-  | "Hardware"
-  | "Software"
-  | "Database"
-  | "Server"
-  | "Security"
+  | "Firewall"
+  | "NetApp"
+  | "NTP"
+  | "Cisco Switch"
+  | "Fortinet FortiSwitch"
+  | "iDrac"
+  | "ESXi"
+  | "vCenter"
+  | "Zabbix"
   | "Other";
 
 export type NetworkSubcategory = 

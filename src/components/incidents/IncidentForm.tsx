@@ -267,24 +267,28 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
             name="subcategory"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{selectedCategory} Subcategory</FormLabel>
+                <FormLabel>{selectedCategory === "IT" ? "IT Item" : "Network Subcategory"}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder={`Select ${selectedCategory} subcategory`} />
+                      <SelectValue placeholder={`Select ${selectedCategory === "IT" ? "IT item" : "Network subcategory"}`} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {selectedCategory === "IT" ? (
                       <>
-                        <SelectItem value="Hardware">Hardware</SelectItem>
-                        <SelectItem value="Software">Software</SelectItem>
-                        <SelectItem value="Database">Database</SelectItem>
-                        <SelectItem value="Server">Server</SelectItem>
-                        <SelectItem value="Security">Security</SelectItem>
+                        <SelectItem value="Firewall">Firewall</SelectItem>
+                        <SelectItem value="NetApp">NetApp</SelectItem>
+                        <SelectItem value="NTP">NTP</SelectItem>
+                        <SelectItem value="Cisco Switch">Cisco Switch</SelectItem>
+                        <SelectItem value="Fortinet FortiSwitch">Fortinet FortiSwitch</SelectItem>
+                        <SelectItem value="iDrac">iDrac</SelectItem>
+                        <SelectItem value="ESXi">ESXi</SelectItem>
+                        <SelectItem value="vCenter">vCenter</SelectItem>
+                        <SelectItem value="Zabbix">Zabbix</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </>
                     ) : (
