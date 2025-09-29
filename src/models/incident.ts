@@ -11,6 +11,23 @@ export type IncidentCategory =
   | "Milestone"
   | "Drone";
 
+export type ITSubcategory = 
+  | "Hardware"
+  | "Software"
+  | "Database"
+  | "Server"
+  | "Security"
+  | "Other";
+
+export type NetworkSubcategory = 
+  | "Router"
+  | "Switch"
+  | "Firewall"
+  | "Wireless"
+  | "Internet"
+  | "VPN"
+  | "Other";
+
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
 
 export type ResponsibleTeam = "Technicians" | "Engineering" | "Third Party" | "Nedeco";
@@ -47,6 +64,7 @@ export interface SpecificDetails {
   radioId?: string;
   radarNumber?: string;
   systemType?: string;
+  subcategory?: ITSubcategory | NetworkSubcategory;
 }
 
 export interface Incident {

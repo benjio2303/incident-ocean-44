@@ -13,7 +13,7 @@ import { CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { IncidentCategory, IncidentFormData, SpecificDetails, IncidentLocation } from "@/models/incident";
+import { IncidentCategory, IncidentFormData, SpecificDetails, IncidentLocation, ITSubcategory, NetworkSubcategory } from "@/models/incident";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIncidents } from "@/contexts/IncidentContext";
 import { useToast } from "@/hooks/use-toast";
@@ -22,13 +22,16 @@ import { useTranslation } from "@/contexts/TranslationContext";
 const formSchema = z.object({
   clientTicketNumber: z.string().optional(),
   category: z.enum([
-    "System",
+    "IT",
     "Network",
     "Radar",
     "Radio",
-    "Camera",
-    "Laboratory",
-    "Other"
+    "Camera EO",
+    "Camera PTZ",
+    "TorchX",
+    "Synch",
+    "Milestone",
+    "Drone"
   ] as [string, ...string[]]),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
@@ -45,19 +48,20 @@ const formSchema = z.object({
   radioId: z.string().optional(),
   radarNumber: z.string().optional(),
   systemType: z.string().optional(),
+  subcategory: z.string().optional(),
 });
 
 const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string }) => {
   const { addIncident } = useIncidents();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [selectedCategory, setSelectedCategory] = useState<string>("Other");
+  const [selectedCategory, setSelectedCategory] = useState<string>("IT");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       reportedBy: defaultReporterName || "",
-      category: "Other",
+      category: "IT",
       isRecurring: false,
       reportedAt: new Date(),
       reportedTime: format(new Date(), "HH:mm"),
@@ -75,6 +79,9 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
     }
     if (data.systemType) {
       specificDetails.systemType = data.systemType;
+    }
+    if (data.subcategory) {
+      specificDetails.subcategory = data.subcategory as ITSubcategory | NetworkSubcategory;
     }
 
     const formData: IncidentFormData = {
@@ -183,13 +190,16 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="System">System</SelectItem>
+                    <SelectItem value="IT">IT</SelectItem>
                     <SelectItem value="Network">Network</SelectItem>
                     <SelectItem value="Radar">Radar</SelectItem>
                     <SelectItem value="Radio">Radio</SelectItem>
-                    <SelectItem value="Camera">Camera</SelectItem>
-                    <SelectItem value="Laboratory">Laboratory</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Camera EO">Camera EO</SelectItem>
+                    <SelectItem value="Camera PTZ">Camera PTZ</SelectItem>
+                    <SelectItem value="TorchX">TorchX</SelectItem>
+                    <SelectItem value="Synch">Synch</SelectItem>
+                    <SelectItem value="Milestone">Milestone</SelectItem>
+                    <SelectItem value="Drone">Drone</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -251,16 +261,45 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
           />
         )}
 
-        {selectedCategory === "System" && (
+        {(selectedCategory === "IT" || selectedCategory === "Network") && (
           <FormField
             control={form.control}
-            name="systemType"
+            name="subcategory"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>System Type</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter System Type" {...field} />
-                </FormControl>
+                <FormLabel>{selectedCategory} Subcategory</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Select ${selectedCategory} subcategory`} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {selectedCategory === "IT" ? (
+                      <>
+                        <SelectItem value="Hardware">Hardware</SelectItem>
+                        <SelectItem value="Software">Software</SelectItem>
+                        <SelectItem value="Database">Database</SelectItem>
+                        <SelectItem value="Server">Server</SelectItem>
+                        <SelectItem value="Security">Security</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="Router">Router</SelectItem>
+                        <SelectItem value="Switch">Switch</SelectItem>
+                        <SelectItem value="Firewall">Firewall</SelectItem>
+                        <SelectItem value="Wireless">Wireless</SelectItem>
+                        <SelectItem value="Internet">Internet</SelectItem>
+                        <SelectItem value="VPN">VPN</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
