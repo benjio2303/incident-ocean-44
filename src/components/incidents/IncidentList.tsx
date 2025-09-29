@@ -40,7 +40,7 @@ const statusColor = (status: IncidentStatus) => {
 
 const categoryIcon = (category: IncidentCategory) => {
   switch (category) {
-    case "System":
+    case "IT":
       return "💻";
     case "Network":
       return "🌐";
@@ -48,7 +48,7 @@ const categoryIcon = (category: IncidentCategory) => {
       return "📡";
     case "Radar":
       return "📊";
-    case "Other":
+    case "Drone":
       return "📝";
     default:
       return "❓";

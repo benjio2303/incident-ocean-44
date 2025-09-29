@@ -88,7 +88,7 @@ export const translations: Record<Language, Record<string, string>> = {
     location: "Location"
   },
   he: {
-    ...loginStrings.he,
+    ...loginStrings.en,
     dashboard: "לוח מחוונים",
     incidents: "תקלות",
     reportIncident: "דיווח על תקלה",

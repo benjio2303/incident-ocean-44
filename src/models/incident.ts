@@ -1,12 +1,15 @@
 
 export type IncidentCategory = 
-  | "System" 
+  | "IT" 
   | "Network" 
   | "Radar" 
   | "Radio" 
-  | "Camera" 
-  | "Laboratory"
-  | "Other";
+  | "Camera EO" 
+  | "Camera PTZ"
+  | "TorchX"
+  | "Synch"
+  | "Milestone"
+  | "Drone";
 
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";
 

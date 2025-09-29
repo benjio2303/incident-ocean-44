@@ -12,7 +12,7 @@ const LabIncidents: React.FC = () => {
   const { t } = useTranslation();
   
   // Filter for laboratory incidents
-  const labIncidents = incidents.filter(inc => inc.category === "Laboratory");
+  const labIncidents = incidents.filter(inc => inc.category === "IT");
   
   return (
     <div className="space-y-6">

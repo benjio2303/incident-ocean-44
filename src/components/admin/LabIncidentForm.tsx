@@ -57,7 +57,7 @@ const LabIncidentForm: React.FC<LabIncidentFormProps> = ({ defaultReporterName, 
   const onSubmit = (data: z.infer<typeof labFormSchema>) => {
     const formData: IncidentFormData = {
       clientTicketNumber: data.internalReference,
-      category: "Laboratory",
+      category: "IT",
       description: `[${data.priority}] ${data.description}`,
       isRecurring: false,
       reportedBy: data.reportedBy,

@@ -20,7 +20,7 @@ const AdminDashboard: React.FC = () => {
   
   // Filter incidents for the dashboard
   const openIncidents = incidents.filter(inc => inc.status !== "Resolved");
-  const labIncidents = incidents.filter(inc => inc.category === "Laboratory");
+  const labIncidents = incidents.filter(inc => inc.category === "IT");
   
   return (
     <div className="space-y-6">
