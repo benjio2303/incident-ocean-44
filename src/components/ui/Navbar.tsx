@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
             </div>
             <Button 
               variant="outline" 
-              className="text-white border-white hover:bg-white hover:text-cy-blue"
+              className="text-white border-white bg-transparent hover:bg-white hover:text-cy-blue"
               onClick={logout}
             >
               <LogOut size={18} className="mr-2" /> {t('logout')}
