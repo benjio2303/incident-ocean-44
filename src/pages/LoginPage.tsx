@@ -42,7 +42,6 @@ import LoginHeader from "@/components/login/LoginHeader";
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
-  role: z.enum(["user", "admin"], { required_error: "Please select a role" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -67,13 +66,12 @@ const LoginPage: React.FC = () => {
     defaultValues: {
       username: "",
       password: "",
-      role: "user",
     },
   });
 
   const onSubmit = (data: FormData) => {
     if (auth && auth.login) {
-      auth.login(data.username, data.password, data.role as UserRole);
+      auth.login(data.username, data.password);
     }
   };
 
@@ -141,28 +139,6 @@ const LoginPage: React.FC = () => {
                               />
                             </FormControl>
                           </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{strings.role}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-white/80 dark:bg-cy-darkGray/40">
-                                <SelectValue placeholder={strings.selectRole} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}

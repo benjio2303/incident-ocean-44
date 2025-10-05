@@ -23,7 +23,7 @@ const INITIAL_USER_USERS = [
 interface AuthContextType {
   user: User | null;
   role: UserRole;
-  login: (username: string, password: string, selectedRole?: UserRole) => void;
+  login: (username: string, password: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
   users: User[];
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [users]);
 
-  const login = (username: string, password: string, selectedRole?: UserRole) => {
+  const login = (username: string, password: string) => {
     // בדיקת משתמש קיים
     const existingUser = users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (username && password) {
       const newUser: User = {
         username,
-        role: selectedRole || "user",
+        role: "user",
         displayName: username,
         email: `${username}@example.com`,
         password
@@ -111,20 +111,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       setUser({
         username,
-        role: selectedRole || "user",
+        role: "user",
         displayName: username,
         email: `${username}@example.com`
       });
-      setRole(selectedRole || "user");
+      setRole("user");
       setIsAuthenticated(true);
 
       sessionStorage.setItem("username", username);
-      sessionStorage.setItem("role", selectedRole || "user");
+      sessionStorage.setItem("role", "user");
       sessionStorage.setItem("isAuthenticated", "true");
 
       toast({
         title: "Login Successful",
-        description: `Welcome ${username}! You are logged in as ${selectedRole || "user"}.`,
+        description: `Welcome ${username}! You are logged in as user.`,
       });
 
       navigate("/user/dashboard");
