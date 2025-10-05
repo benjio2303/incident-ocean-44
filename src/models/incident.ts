@@ -21,15 +21,20 @@ export type ITSubcategory =
   | "ESXi"
   | "vCenter"
   | "Zabbix"
+  | "FortiManager"
   | "Other";
 
 export type NetworkSubcategory = 
-  | "Router"
-  | "Switch"
+  | "Fortinet Router"
+  | "Fortinet Switch"
   | "Firewall"
-  | "Wireless"
+  | "LTE"
   | "Internet"
   | "VPN"
+  | "Fortinet Encryptor"
+  | "FortiManager"
+  | "FortiAnalyzer"
+  | "FortiAuthenticator"
   | "Other";
 
 export type IncidentStatus = "Open" | "In Progress" | "Resolved";

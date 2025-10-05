@@ -267,14 +267,14 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
             name="subcategory"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{selectedCategory === "IT" ? "IT Item" : "Network Subcategory"}</FormLabel>
+                <FormLabel>{selectedCategory === "IT" ? "IT Item" : "Network Item"}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder={`Select ${selectedCategory === "IT" ? "IT item" : "Network subcategory"}`} />
+                      <SelectValue placeholder={`Select ${selectedCategory === "IT" ? "IT item" : "Network item"}`} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -289,16 +289,21 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
                         <SelectItem value="ESXi">ESXi</SelectItem>
                         <SelectItem value="vCenter">vCenter</SelectItem>
                         <SelectItem value="Zabbix">Zabbix</SelectItem>
+                        <SelectItem value="FortiManager">FortiManager</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </>
                     ) : (
                       <>
-                        <SelectItem value="Router">Router</SelectItem>
-                        <SelectItem value="Switch">Switch</SelectItem>
+                        <SelectItem value="Fortinet Router">Fortinet Router</SelectItem>
+                        <SelectItem value="Fortinet Switch">Fortinet Switch</SelectItem>
                         <SelectItem value="Firewall">Firewall</SelectItem>
-                        <SelectItem value="Wireless">Wireless</SelectItem>
+                        <SelectItem value="LTE">LTE</SelectItem>
                         <SelectItem value="Internet">Internet</SelectItem>
                         <SelectItem value="VPN">VPN</SelectItem>
+                        <SelectItem value="Fortinet Encryptor">Fortinet Encryptor</SelectItem>
+                        <SelectItem value="FortiManager">FortiManager</SelectItem>
+                        <SelectItem value="FortiAnalyzer">FortiAnalyzer</SelectItem>
+                        <SelectItem value="FortiAuthenticator">FortiAuthenticator</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </>
                     )}
