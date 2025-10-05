@@ -296,7 +296,6 @@ const IncidentForm = ({ defaultReporterName }: { defaultReporterName?: string })
                       <>
                         <SelectItem value="Fortinet Router">Fortinet Router</SelectItem>
                         <SelectItem value="Fortinet Switch">Fortinet Switch</SelectItem>
-                        <SelectItem value="Firewall">Firewall</SelectItem>
                         <SelectItem value="LTE">LTE</SelectItem>
                         <SelectItem value="Internet">Internet</SelectItem>
                         <SelectItem value="VPN">VPN</SelectItem>

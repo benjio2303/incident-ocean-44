@@ -27,7 +27,6 @@ export type ITSubcategory =
 export type NetworkSubcategory = 
   | "Fortinet Router"
   | "Fortinet Switch"
-  | "Firewall"
   | "LTE"
   | "Internet"
   | "VPN"
