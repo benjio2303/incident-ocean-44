@@ -145,6 +145,27 @@ const mockIncidents: Incident[] = [
       }
     ],
     currentTeam: "Engineering",
+  },
+  {
+    id: "6",
+    clientTicketNumber: "CLIENT-006",
+    internalTicketNumber: "CY-123456-006",
+    category: "Drone",
+    description: "Drone detection system offline",
+    isRecurring: false,
+    reportedBy: "David Chen",
+    location: "Larnaca Airport",
+    reportedAt: new Date(Date.now() - 86400000 * 3),
+    openedAt: new Date(Date.now() - 86400000 * 3),
+    status: "Open",
+    teamHistory: [
+      {
+        team: "Technicians",
+        assignedAt: new Date(Date.now() - 86400000 * 3),
+        notes: "Investigating sensor malfunction",
+      }
+    ],
+    currentTeam: "Technicians",
   }
 ];
 
