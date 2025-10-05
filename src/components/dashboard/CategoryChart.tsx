@@ -11,31 +11,21 @@ interface CategoryChartProps {
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF00FF", "#00FFFF", "#FFFF00"];
 
 const CategoryChart: React.FC<CategoryChartProps> = ({ incidents }) => {
-  // Count incidents by category
-  const categoryCounts: Record<string, number> = {
-    "System": 0,
-    "Network": 0,
-    "Radio": 0,
-    "Radar": 0,
-    "Camera": 0,
-    "Laboratory": 0,
-    "Other": 0
-  };
+  // Dynamically count incidents by category
+  const categoryCounts: Record<string, number> = {};
   
   incidents.forEach(incident => {
-    if (categoryCounts.hasOwnProperty(incident.category)) {
-      categoryCounts[incident.category]++;
-    } else {
-      // Handle any category not explicitly defined
-      categoryCounts["Other"]++;
-    }
+    const category = incident.category || "Other";
+    categoryCounts[category] = (categoryCounts[category] || 0) + 1;
   });
   
-  // Convert to data for the chart
-  const data = Object.entries(categoryCounts).map(([name, value]) => ({
-    name,
-    value
-  }));
+  // Convert to data for the chart, filter out categories with 0 incidents
+  const data = Object.entries(categoryCounts)
+    .filter(([_, value]) => value > 0)
+    .map(([name, value]) => ({
+      name,
+      value
+    }));
   
   return (
     <Card className="col-span-1">
@@ -51,11 +41,11 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ incidents }) => {
                 data={data}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                labelLine={true}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
