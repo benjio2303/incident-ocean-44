@@ -50,18 +50,18 @@ const Navbar: React.FC = () => {
             )}
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:block font-medium">
-              {role === "admin" ? t('adminPortal') : t('userPortal')}
-            </div>
-            <Button 
-              variant="outline" 
-              className="text-white border-white bg-transparent hover:bg-white hover:text-cy-blue"
-              onClick={logout}
-            >
-              <LogOut size={18} className="mr-2" /> {t('logout')}
-            </Button>
-          </div>
+          	<div className="flex items-center space-x-4">
+            	<div className="hidden md:block font-medium">
+            		{role === "admin" ? t('adminPortal') : t('userPortal')}
+            	</div>
+            	<Button 
+            	  variant="outline" 
+            	  className="text-white border-white/50 bg-white/10 hover:bg-white hover:text-cy-blue"
+            	  onClick={logout}
+            	>
+            	  <LogOut size={18} className="mr-2" /> {t('logout')}
+            	</Button>
+          	</div>
         </div>
       </div>
     </nav>
